@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet test --nologo
+      - name: Pack
+        run: dotnet pack -c Release --nologo
+
+  generated-code:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      # Specs are committed, so this works offline and catches hand edits to Generated/.
+      - name: Regenerate and check for drift
+        shell: pwsh
+        run: |
+          ./scripts/generate-clients.ps1
+          git add -N src
+          git diff --exit-code -- src

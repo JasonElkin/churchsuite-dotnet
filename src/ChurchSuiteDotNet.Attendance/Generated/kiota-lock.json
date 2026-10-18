@@ -1,0 +1,35 @@
+{
+  "descriptionHash": "CDCFB4C6BFA104034041F499CA36685003B77FD4569FEA2FDBC5BAA19FE843352AEB717430FEC069A9F556B36A9FDE275A5788E0EFBD58F15BA1B36F7B21F5F6",
+  "descriptionLocation": "https://raw.githubusercontent.com/ChurchSuite/churchsuite-api/refs/heads/master/src/attendance.yaml",
+  "lockFileVersion": "1.0.0",
+  "kiotaVersion": "1.35.0",
+  "clientClassName": "AttendanceClient",
+  "typeAccessModifier": "Public",
+  "clientNamespaceName": "ChurchSuiteDotNet.Attendance",
+  "language": "CSharp",
+  "usesBackingStore": false,
+  "excludeBackwardCompatible": true,
+  "includeAdditionalData": true,
+  "disableSSLValidation": false,
+  "serializers": [
+    "Microsoft.Kiota.Serialization.Json.JsonSerializationWriterFactory",
+    "Microsoft.Kiota.Serialization.Text.TextSerializationWriterFactory",
+    "Microsoft.Kiota.Serialization.Form.FormSerializationWriterFactory",
+    "Microsoft.Kiota.Serialization.Multipart.MultipartSerializationWriterFactory"
+  ],
+  "deserializers": [
+    "Microsoft.Kiota.Serialization.Json.JsonParseNodeFactory",
+    "Microsoft.Kiota.Serialization.Text.TextParseNodeFactory",
+    "Microsoft.Kiota.Serialization.Form.FormParseNodeFactory"
+  ],
+  "structuredMimeTypes": [
+    "application/json",
+    "text/plain;q=0.9",
+    "application/x-www-form-urlencoded;q=0.2",
+    "multipart/form-data;q=0.1"
+  ],
+  "includePatterns": [],
+  "excludePatterns": [],
+  "disabledValidationRules": [],
+  "allowedExternalOrigins": []
+}

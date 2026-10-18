@@ -1,0 +1,75 @@
+name: Update clients
+
+# Pins the latest upstream spec tag, regenerates the clients and opens a PR with a suggested version bump.
+# Merging that PR publishes all packages at the next shared version (see release.yml).
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Pin upstream specs
+        id: specs
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: ./scripts/update-specs.ps1
+
+      - name: Regenerate clients
+        shell: pwsh
+        run: ./scripts/generate-clients.ps1
+
+      - name: Detect changed modules
+        id: changes
+        shell: pwsh
+        run: ./scripts/changed-modules.ps1
+
+      - name: Build and test
+        if: steps.changes.outputs.changed != ''
+        run: dotnet test --nologo
+
+      - name: Classify changes
+        id: classify
+        if: steps.changes.outputs.changed != ''
+        shell: pwsh
+        run: ./scripts/classify-changes.ps1 -Modules '${{ steps.changes.outputs.changed }}'
+
+      - name: Build PR body
+        if: steps.changes.outputs.changed != ''
+        shell: pwsh
+        run: >
+          ./scripts/build-pr-body.ps1
+          -OldVersion '${{ steps.specs.outputs.old-version }}'
+          -NewVersion '${{ steps.specs.outputs.new-version }}'
+          -Changed '${{ steps.changes.outputs.changed }}'
+          -New '${{ steps.changes.outputs.new }}'
+          -Bump '${{ steps.classify.outputs.bump }}'
+          -OutPath "$env:RUNNER_TEMP/pr-body.md"
+
+      - name: Create pull request
+        if: steps.changes.outputs.changed != ''
+        uses: peter-evans/create-pull-request@v7
+        with:
+          # A PAT or GitHub App token makes CI run on the PR; GITHUB_TOKEN PRs don't trigger workflows.
+          token: ${{ secrets.PR_TOKEN || secrets.GITHUB_TOKEN }}
+          branch: automation/update-clients
+          commit-message: "Update generated clients to ChurchSuite API ${{ steps.specs.outputs.new-version }}"
+          title: "Update generated ChurchSuite clients (API ${{ steps.specs.outputs.new-version }})"
+          body-path: ${{ runner.temp }}/pr-body.md
+          labels: api-update
+          delete-branch: true

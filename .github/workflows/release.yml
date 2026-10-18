@@ -1,0 +1,146 @@
+name: Release
+
+# Publishes every package to NuGet at one shared version (lockstep, tag v<version>, or v<version>-<alpha|beta|rc>.<n>).
+# Runs when an automation/update-clients PR (label api-update) is merged, using the bump in the release-plan
+# block of the PR body (always stable), or manually for core/DI changes, one-off and pre-releases.
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Which part of the version to increment (major from 0.x goes to 1.0.0; first release is 0.1.0)
+        type: choice
+        options: [minor, patch, major]
+        default: minor
+      prerelease:
+        description: Publish a pre-release on this channel (e.g. v0.3.0-beta.1) instead of a stable version
+        type: choice
+        options: [none, alpha, beta, rc]
+        default: none
+      dry_run:
+        description: Plan and pack only; push nothing
+        type: boolean
+        default: false
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  release:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.merged == true &&
+       github.event.pull_request.head.repo.full_name == github.repository &&
+       github.event.pull_request.head.ref == 'automation/update-clients' &&
+       contains(github.event.pull_request.labels.*.name, 'api-update'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha || github.sha }}
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Plan release
+        id: plan
+        shell: pwsh
+        env:
+          EVENT: ${{ github.event_name }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          BUMP: ${{ inputs.bump }}
+          PRERELEASE: ${{ inputs.prerelease }}
+        run: |
+          $bump = $env:BUMP
+          # Merged update PRs always publish a stable release.
+          $prerelease = if ($env:PRERELEASE -and $env:PRERELEASE -ne 'none') { $env:PRERELEASE } else { '' }
+          if ($env:EVENT -eq 'pull_request') {
+            if ($env:PR_BODY -notmatch '(?s)<!-- release-plan[^>]*-->(?<plan>.*?)<!-- /release-plan -->') { throw "No release-plan block in the PR body" }
+            if ($Matches.plan -notmatch '(?m)^\s*bump:\s*(?<bump>major|minor|patch)\s*$') {
+              Write-Host "The release plan has no bump line; not publishing."
+              return
+            }
+            $bump = $Matches.bump
+          }
+
+          $json = ./scripts/tag-release.ps1 -Bump $bump -Prerelease $prerelease -Json
+          if (-not $json) { Write-Host "Nothing to release."; return }
+          $plan = $json | ConvertFrom-Json
+          $plan.Notes | Set-Content "$env:RUNNER_TEMP/notes.md"
+          "tag=$($plan.Tag)" | Add-Content $env:GITHUB_OUTPUT
+          "version=$($plan.Version)" | Add-Content $env:GITHUB_OUTPUT
+          "prerelease=$($plan.Prerelease.ToString().ToLowerInvariant())" | Add-Content $env:GITHUB_OUTPUT
+          Write-Host "Releasing $($plan.Tag) ($bump since $(if ($plan.LastTag) { $plan.LastTag } else { 'nothing' }))`n`n$($plan.Notes)"
+
+      - name: Test
+        if: steps.plan.outputs.tag != ''
+        run: dotnet test --nologo
+
+      - name: Tag locally (MinVer reads it)
+        if: steps.plan.outputs.tag != ''
+        env:
+          TAG: ${{ steps.plan.outputs.tag }}
+        run: |
+          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            echo "Tag $TAG already exists" >&2
+            exit 1
+          fi
+          git tag "$TAG"
+
+      - name: Pack
+        if: steps.plan.outputs.tag != ''
+        env:
+          VERSION: ${{ steps.plan.outputs.version }}
+        run: |
+          dotnet pack -c Release -o artifacts --nologo
+          expected=$(find src -mindepth 2 -maxdepth 2 -name '*.csproj' | wc -l)
+          packed=$(ls artifacts/*."$VERSION".nupkg | wc -l)
+          ls artifacts
+          if [ "$packed" -ne "$expected" ] || ls artifacts/*.nupkg | grep -v "\.$VERSION\.nupkg$"; then
+            echo "Expected $expected packages at $VERSION, found $packed" >&2
+            exit 1
+          fi
+
+      # Trusted publishing: exchanges the GitHub OIDC token for a short-lived NuGet API key.
+      - name: NuGet login (OIDC)
+        if: steps.plan.outputs.tag != '' && inputs.dry_run != true
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      # Core first so it is available as soon as the modules that depend on it are.
+      - name: Push to NuGet
+        if: steps.plan.outputs.tag != '' && inputs.dry_run != true
+        env:
+          VERSION: ${{ steps.plan.outputs.version }}
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+        run: |
+          push() { dotnet nuget push "$1" --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate; }
+          push "artifacts/ChurchSuiteDotNet.$VERSION.nupkg"
+          push "artifacts/*.nupkg"
+
+      # The tag is only pushed once NuGet has accepted every package, so a failed run can simply be re-run.
+      - name: Push tag and create GitHub release
+        if: steps.plan.outputs.tag != '' && inputs.dry_run != true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.plan.outputs.tag }}
+          VERSION: ${{ steps.plan.outputs.version }}
+          PRERELEASE: ${{ steps.plan.outputs.prerelease }}
+        run: |
+          git push origin "refs/tags/$TAG"
+          gh release create "$TAG" --verify-tag \
+            --prerelease="$PRERELEASE" \
+            --title "ChurchSuiteDotNet $VERSION" \
+            --notes-file "$RUNNER_TEMP/notes.md" \
+            artifacts/*

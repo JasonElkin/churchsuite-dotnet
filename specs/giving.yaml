@@ -1,0 +1,5804 @@
+openapi: 3.2.0
+info:
+  version: 2.112.3
+  title: Giving Module
+  description: >-
+    This module is designed to help manage the donations you receive and the
+    givers who gave them. The Giving module also includes support for claiming
+    Gift Aid (for UK customers only) and Tax Deductible donations (North
+    America).
+  termsOfService: https://churchsuite.com/terms-of-service/
+  contact:
+    email: support@churchsuite.com
+servers:
+  - url: https://api.churchsuite.com/v2
+    description: Public API server
+paths:
+  /giving/batches:
+    get:
+      operationId: list_giving_batches
+      summary: List batches
+      description: Returns a list of batches
+      parameters:
+        - name: batch_ids[]
+          in: query
+          description: >-
+            Filter records to those matching values in the provided array. This
+            filter uses the logical OR operator.
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int32
+              minimum: 1
+        - $ref: '#/components/parameters/PaginationPage'
+        - $ref: '#/components/parameters/PaginationPerPage'
+      responses:
+        '200':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Batch'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                additionalProperties: false
+                required:
+                  - data
+                  - pagination
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.read
+      tags:
+        - Donations
+  /giving/claims:
+    get:
+      operationId: list_giving_claims
+      summary: List claims
+      description: Returns a list of Gift Aid claims (UK only)
+      parameters:
+        - name: claim_ids[]
+          in: query
+          description: >-
+            Filter records to those matching values in the provided array. This
+            filter uses the logical OR operator.
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int32
+              minimum: 1
+        - name: statuses[]
+          in: query
+          description: >-
+            Filter records to those matching values in the provided array. This
+            filter uses the logical OR operator.
+          schema:
+            type: array
+            items:
+              example: pending
+              enum:
+                - complete
+                - pending
+                - processing
+                - reviewed
+                - submitted
+        - $ref: '#/components/parameters/PaginationPage'
+        - $ref: '#/components/parameters/PaginationPerPage'
+        - $ref: '#/components/parameters/SiteIds'
+      responses:
+        '200':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Claim'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                additionalProperties: false
+                required:
+                  - data
+                  - pagination
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.read
+      tags:
+        - Claims
+  /giving/custom_fields/{id}:
+    parameters:
+      - name: id
+        in: path
+        description: ID of the custom field to retrieve.
+        required: true
+        schema:
+          type: integer
+          format: int32
+          minimum: 1
+    get:
+      operationId: get_giving_custom_field
+      summary: Get a custom field
+      description: Retrieve a single custom field identified by ID.
+      responses:
+        '200':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/CustomField'
+                additionalProperties: false
+                required:
+                  - data
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.read
+      tags:
+        - Custom Fields GI
+  /giving/custom_fields:
+    get:
+      operationId: list_giving_custom_fields
+      summary: List custom fields
+      description: Returns a list of custom fields
+      parameters:
+        - $ref: '#/components/parameters/PaginationPage'
+        - $ref: '#/components/parameters/PaginationPerPage'
+      responses:
+        '200':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CustomField'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                additionalProperties: false
+                required:
+                  - data
+                  - pagination
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.read
+      tags:
+        - Custom Fields GI
+  /giving/declarations:
+    get:
+      operationId: list_declarations
+      summary: List declarations
+      description: Returns a list of declarations.
+      parameters:
+        - name: giver_ids[]
+          in: query
+          description: >-
+            Filter records to those matching values in the provided array. This
+            filter uses the logical OR operator.
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int32
+              minimum: 1
+        - name: fund_ids[]
+          in: query
+          description: >-
+            Filter records to those matching values in the provided array. This
+            filter uses the logical OR operator.
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int32
+              minimum: 1
+        - name: statuses[]
+          in: query
+          description: >-
+            Filter records to those matching values in the provided array. This
+            filter uses the logical OR operator.
+          schema:
+            type: array
+            items:
+              example: active
+              enum:
+                - active
+                - expired
+                - future
+            default:
+              - active
+        - name: order_by
+          in: query
+          description: Order records by the specified field and sort direction.
+          schema:
+            type: string
+            example: id:asc
+            default: id:asc
+            enum:
+              - created_at:asc
+              - created_at:desc
+              - date:asc
+              - date:desc
+              - id:asc
+              - id:desc
+              - modified_at:asc
+              - modified_at:desc
+            x-enum-descriptions:
+              created_at:asc: Date created, oldest first
+              created_at:desc: Date created, newest first
+              date:asc: Start date, earliest to latest
+              date:desc: >-
+                End date (null first, then latest to earliest), then start date
+                (latest to earliest)
+              id:asc: ID, lowest first
+              id:desc: ID, highest first
+              modified_at:asc: Date modified, oldest first
+              modified_at:desc: Date modified, newest first
+        - $ref: '#/components/parameters/PaginationPage'
+        - $ref: '#/components/parameters/PaginationPerPage'
+      responses:
+        '200':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Declaration'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                additionalProperties: false
+                required:
+                  - data
+                  - pagination
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.read
+      tags:
+        - Declarations
+  /giving/donations:
+    get:
+      operationId: list_donations
+      summary: List donations
+      description: Returns a list of donations.
+      parameters:
+        - name: claim_ids[]
+          in: query
+          description: >-
+            Filter records to those matching values in the provided array. This
+            filter uses the logical OR operator.
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int32
+              minimum: 1
+        - name: fund_ids[]
+          in: query
+          description: >-
+            Filter records to those matching values in the provided array. This
+            filter uses the logical OR operator.
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int32
+              minimum: 1
+        - name: giver_ids[]
+          in: query
+          description: >-
+            Filter records to those matching values in the provided array. This
+            filter uses the logical OR operator.
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int32
+              minimum: 1
+        - name: pledge_ids[]
+          in: query
+          description: >-
+            Filter records to those matching values in the provided array. This
+            filter uses the logical OR operator.
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int32
+              minimum: 1
+        - name: before
+          in: query
+          description: Only include records before this date.
+          schema:
+            type: string
+            format: date
+            example: '2024-02-24'
+        - name: after
+          in: query
+          description: Only include records after this date.
+          schema:
+            type: string
+            format: date
+            example: '2024-01-24'
+        - name: giftaid_claimable
+          in: query
+          description: Filter records by the provided status.
+          schema:
+            type: boolean
+            example: true
+        - name: giftaid_claimed
+          in: query
+          description: Filter records by the provided status.
+          schema:
+            type: boolean
+            example: true
+        - name: q
+          in: query
+          description: >-
+            Filter records with a fuzzy string match against the following
+            properties: cheque_number, method, fund_name, giver_reference,
+            giver_first_name, giver_last_name.
+          schema:
+            description: A URL encoded string.
+            type: string
+            example: Card
+        - name: statuses[]
+          in: query
+          description: >-
+            Filter records to those matching values in the provided array. This
+            filter uses the logical OR operator.
+          schema:
+            type: array
+            items:
+              example: pending
+              enum:
+                - active
+                - deleted
+                - pending
+                - refunded
+            default: active
+        - name: order_by
+          in: query
+          description: Order records by the specified field and sort direction.
+          schema:
+            type: string
+            example: id:asc
+            default: date:desc
+            enum:
+              - created_at:asc
+              - created_at:desc
+              - date:asc
+              - date:desc
+              - id:asc
+              - id:desc
+              - modified_at:asc
+              - modified_at:desc
+            x-enum-descriptions:
+              created_at:asc: Date created, oldest first
+              created_at:desc: Date created, newest first
+              date:asc: >-
+                Date of donation (earliest first), then fund name (A to Z), then
+                last name (A to Z)
+              date:desc: >-
+                Date of donation (latest first), then fund name (A to Z), then
+                last name (A to Z)
+              id:asc: ID, lowest first
+              id:desc: ID, highest first
+              modified_at:asc: Date modified, oldest first
+              modified_at:desc: Date modified, newest first
+        - $ref: '#/components/parameters/PaginationPage'
+        - $ref: '#/components/parameters/PaginationPerPage'
+      responses:
+        '200':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Donation'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                additionalProperties: false
+                required:
+                  - data
+                  - pagination
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.read
+      tags:
+        - Donations
+    post:
+      operationId: create_giving_donation
+      summary: Create a Donation
+      description: Create a Donation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DonationAdd'
+      responses:
+        '201':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Donation'
+                additionalProperties: false
+                required:
+                  - data
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.write
+      tags:
+        - Donations
+  /giving/flows/{id}:
+    parameters:
+      - name: id
+        in: path
+        description: ID of the record to retrieve.
+        required: true
+        schema:
+          type: integer
+          format: int32
+          minimum: 1
+    get:
+      operationId: get_giving_flow
+      summary: Get a flow
+      description: Retrieve a single flow identified by ID.
+      responses:
+        '200':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Flow'
+                additionalProperties: false
+                required:
+                  - data
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.read
+      tags:
+        - Flows GI
+  /giving/flows:
+    get:
+      operationId: list_giving_flows
+      summary: List flows
+      description: Returns a list of flows, sorted alphabetically by name.
+      parameters:
+        - $ref: '#/components/parameters/PaginationPage'
+        - $ref: '#/components/parameters/PaginationPerPage'
+        - name: status
+          in: query
+          description: Filter records by the provided status.
+          schema:
+            type: string
+            example: active
+            default: active
+            enum:
+              - active
+              - archived
+        - name: q
+          in: query
+          description: >-
+            Filter records with a fuzzy string match against the following
+            properties: name.
+          schema:
+            description: A URL encoded string.
+            type: string
+            example: wedding
+            minLength: 1
+      responses:
+        '200':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Flow'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                additionalProperties: false
+                required:
+                  - data
+                  - pagination
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.read
+      tags:
+        - Flows GI
+  /giving/flow_stages/{id}:
+    parameters:
+      - name: id
+        in: path
+        description: ID of the record to retrieve.
+        required: true
+        schema:
+          type: integer
+          format: int32
+          example: 45
+          minimum: 1
+    delete:
+      operationId: delete_giving_flow_stage
+      summary: Delete a flow stage
+      description: >-
+        Delete a single stage identified by ID. When a stage is deleted, all
+        actions and flow trackings linked to the stage will be deleted.
+      responses:
+        '204':
+          description: Successfully deleted
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.write
+      tags:
+        - Flows GI
+    get:
+      operationId: get_giving_flow_stage
+      summary: Get a flow stage
+      description: Retrieve a single stage identified by ID.
+      responses:
+        '200':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/FlowStage'
+                additionalProperties: false
+                required:
+                  - data
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.read
+      tags:
+        - Flows GI
+    put:
+      operationId: edit_giving_flow_stage
+      summary: Update a flow stage
+      description: Update a single stage identified by ID.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FlowStageEdit'
+      responses:
+        '200':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/FlowStage'
+                additionalProperties: false
+                required:
+                  - data
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.write
+      tags:
+        - Flows GI
+  /giving/flow_stages:
+    get:
+      operationId: list_giving_flow_stages
+      summary: List flow stages
+      description: Returns a list of stages.
+      parameters:
+        - $ref: '#/components/parameters/PaginationPage'
+        - $ref: '#/components/parameters/PaginationPerPage'
+        - name: flow_ids[]
+          in: query
+          description: >-
+            Filter records to those matching values in the provided array. This
+            filter uses the logical OR operator.
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int32
+              minimum: 1
+      responses:
+        '200':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FlowStage'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                additionalProperties: false
+                required:
+                  - data
+                  - pagination
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.read
+      tags:
+        - Flows GI
+    post:
+      operationId: create_giving_flow_stage
+      summary: Create a flow stage
+      description: Create a stage for a flow.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FlowStageAdd'
+      responses:
+        '201':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/FlowStage'
+                additionalProperties: false
+                required:
+                  - data
+          links:
+            EditFlowStageByID:
+              operationId: edit_giving_flow_stage
+              parameters:
+                id: $response.body#/data/id
+            GetFlowStageByID:
+              operationId: get_giving_flow_stage
+              parameters:
+                id: $response.body#/data/id
+            DeleteFlowStageByID:
+              operationId: delete_giving_flow_stage
+              parameters:
+                id: $response.body#/data/id
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.write
+      tags:
+        - Flows GI
+  /giving/flow_trackings/{id}:
+    parameters:
+      - name: id
+        in: path
+        description: ID of the record to retrieve.
+        required: true
+        schema:
+          type: integer
+          format: int32
+          example: 45
+          minimum: 1
+    get:
+      operationId: get_giving_flow_tracking
+      summary: Get a flow tracking
+      description: >-
+        Retrieve a single flow tracking, linked to a person's progress through a
+        flow, identified by ID.
+      responses:
+        '200':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/FlowTracking'
+                additionalProperties: false
+                required:
+                  - data
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.read
+      tags:
+        - Flows GI
+    put:
+      operationId: edit_giving_flow_tracking
+      summary: Update a flow tracking
+      description: >-
+        Update a single flow tracking, linked to a person's progress through a
+        flow, identified by ID.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FlowTrackingEdit'
+      responses:
+        '200':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/FlowTracking'
+                additionalProperties: false
+                required:
+                  - data
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.write
+      tags:
+        - Flows GI
+    delete:
+      operationId: delete_giving_flow_tracking
+      summary: Delete a flow tracking
+      description: >-
+        Delete a single flow tracking, linked to a person's progress through a
+        flow, identified by ID.
+      responses:
+        '204':
+          description: Successfully deleted
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.write
+      tags:
+        - Flows GI
+  /giving/flow_trackings:
+    get:
+      operationId: list_giving_flow_trackings
+      summary: List flow trackings
+      description: >-
+        Returns a list of flow trackings linked to people's progress through a
+        flow.
+      parameters:
+        - $ref: '#/components/parameters/PaginationPage'
+        - $ref: '#/components/parameters/PaginationPerPage'
+        - name: due_before
+          in: query
+          description: Only include records that start before this date.
+          schema:
+            type: string
+            format: date
+            example: '2024-02-24'
+        - name: due_after
+          in: query
+          description: Only include records that start after this date.
+          schema:
+            type: string
+            format: date
+            example: '2024-01-24'
+        - name: flow_ids[]
+          in: query
+          description: >-
+            Filter records to those matching values in the provided array. This
+            filter uses the logical OR operator.
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int32
+              minimum: 1
+        - name: giver_ids[]
+          in: query
+          description: >-
+            Filter records to those matching values in the provided array. This
+            filter uses the logical OR operator.
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int32
+              minimum: 1
+        - name: stage_ids[]
+          in: query
+          description: >-
+            Filter records to those matching values in the provided array. This
+            filter uses the logical OR operator.
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int32
+              minimum: 1
+      responses:
+        '200':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FlowTracking'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                additionalProperties: false
+                required:
+                  - data
+                  - pagination
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.read
+      tags:
+        - Flows GI
+    post:
+      operationId: create_giving_flow_tracking
+      summary: Create a flow tracking
+      description: >-
+        Create a flow tracking, linked to a person's progress through a flow,
+        with the provided settings.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FlowTrackingAdd'
+      responses:
+        '201':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/FlowTracking'
+                additionalProperties: false
+                required:
+                  - data
+          links:
+            EditFlowTrackingByID:
+              operationId: edit_giving_flow_tracking
+              parameters:
+                id: $response.body#/data/id
+            GetFlowTrackingByID:
+              operationId: get_giving_flow_tracking
+              parameters:
+                id: $response.body#/data/id
+            DeleteFlowTrackingByID:
+              operationId: delete_giving_flow_tracking
+              parameters:
+                id: $response.body#/data/id
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.write
+      tags:
+        - Flows GI
+  /giving/funds/{id}:
+    parameters:
+      - name: id
+        in: path
+        description: ID of the record to retrieve.
+        required: true
+        schema:
+          type: integer
+          format: int32
+          minimum: 1
+    get:
+      operationId: get_fund
+      summary: Get a fund
+      description: Retrieve a single fund identified by ID.
+      responses:
+        '200':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Fund'
+                additionalProperties: false
+                required:
+                  - data
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.read
+      tags:
+        - Funds
+    delete:
+      operationId: delete_fund
+      summary: Delete a fund
+      description: Delete a single fund identified by ID.
+      responses:
+        '204':
+          description: Successfully deleted
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.write
+      tags:
+        - Funds
+    put:
+      operationId: edit_fund
+      summary: Update a fund
+      description: Update a single fund identified by ID.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FundEdit'
+      responses:
+        '200':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Fund'
+                additionalProperties: false
+                required:
+                  - data
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.write
+      tags:
+        - Funds
+  /giving/funds:
+    get:
+      operationId: list_funds
+      summary: List funds
+      description: Returns a list of funds, sorted by their order property.
+      parameters:
+        - $ref: '#/components/parameters/PaginationPage'
+        - $ref: '#/components/parameters/PaginationPerPage'
+        - name: status
+          in: query
+          description: Filter records by the provided status.
+          schema:
+            type: string
+            example: active
+            default: active
+            enum:
+              - active
+              - archived
+        - name: q
+          in: query
+          description: >-
+            Filter records with a fuzzy string match against the following
+            properties: name.
+          schema:
+            description: A URL encoded string.
+            type: string
+            example: General Church Fund
+            minLength: 1
+        - name: visible_in_donate
+          in: query
+          description: Filter funds to only those visible in Donate.
+          schema:
+            type: boolean
+            example: true
+        - name: visible_in_tap_to_donate
+          in: query
+          description: Filter funds to only those visible in Tap to Donate.
+          schema:
+            type: boolean
+            example: true
+      responses:
+        '200':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Fund'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                additionalProperties: false
+                required:
+                  - data
+                  - pagination
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.read
+      tags:
+        - Funds
+    post:
+      operationId: create_fund
+      summary: Create a fund
+      description: Create a fund with the provided settings.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FundAdd'
+      responses:
+        '201':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Fund'
+                additionalProperties: false
+                required:
+                  - data
+          links:
+            EditFundByID:
+              operationId: edit_fund
+              parameters:
+                id: $response.body#/data/id
+            GetFundByID:
+              operationId: get_fund
+              parameters:
+                id: $response.body#/data/id
+            DeleteFundByID:
+              operationId: delete_fund
+              parameters:
+                id: $response.body#/data/id
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.write
+      tags:
+        - Funds
+  /giving/givers/{id}:
+    parameters:
+      - name: id
+        in: path
+        description: ID of the record to retrieve.
+        required: true
+        schema:
+          type: integer
+          format: int32
+          minimum: 1
+    get:
+      operationId: get_giver
+      summary: Get a giver
+      description: Retrieve a single giver identified by ID.
+      responses:
+        '200':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Giver'
+                additionalProperties: false
+                required:
+                  - data
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.read
+      tags:
+        - Givers
+    delete:
+      operationId: delete_giver
+      summary: Delete a giver
+      description: Delete a single giver identified by ID.
+      responses:
+        '204':
+          description: Successfully deleted
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.write
+      tags:
+        - Givers
+  /giving/givers/{id}/notes:
+    parameters:
+      - name: id
+        in: path
+        description: ID of the Giver in question.
+        required: true
+        schema:
+          type: integer
+          format: int32
+          example: 717
+          minimum: 1
+    get:
+      operationId: list_giver_notes
+      summary: List giver notes
+      description: Returns a list of giver notes, sorted by pinned, created_at.
+      responses:
+        '200':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Note'
+                additionalProperties: false
+                required:
+                  - data
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.read
+      tags:
+        - Givers
+    post:
+      operationId: create_giver_note
+      summary: Create a giver note
+      description: Create a Note against a Giver in the Giving module.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoteAdd'
+      responses:
+        '201':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Note'
+                additionalProperties: false
+                required:
+                  - data
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.write
+      tags:
+        - Givers
+  /giving/givers:
+    get:
+      operationId: list_givers
+      summary: List givers
+      description: Returns a list of givers.
+      parameters:
+        - $ref: '#/components/parameters/PaginationPage'
+        - $ref: '#/components/parameters/PaginationPerPage'
+        - $ref: '#/components/parameters/SiteIds'
+        - name: status
+          in: query
+          description: Filter records by the provided status.
+          schema:
+            type: string
+            example: active
+            default: active
+            enum:
+              - active
+              - archived
+        - name: q
+          in: query
+          description: >-
+            Filter records with a fuzzy string match against the following
+            properties: first_name, last_name, reference, bank_reference.
+          schema:
+            description: A URL encoded string.
+            type: string
+            example: Annabel
+            minLength: 1
+        - name: tag_ids[]
+          in: query
+          description: >-
+            Filter records to those matching values in the provided array. This
+            filter uses the logical OR operator.
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int32
+              minimum: 1
+        - name: order_by
+          in: query
+          description: Order records by the specified field and sort direction.
+          schema:
+            type: string
+            example: id:asc
+            default: name:asc
+            enum:
+              - created_at:asc
+              - created_at:desc
+              - id:asc
+              - id:desc
+              - modified_at:asc
+              - modified_at:desc
+              - name:asc
+              - name:desc
+            x-enum-descriptions:
+              created_at:asc: Date created, oldest first
+              created_at:desc: Date created, newest first
+              id:asc: ID, lowest first
+              id:desc: ID, highest first
+              modified_at:asc: Date modified, oldest first
+              modified_at:desc: Date modified, newest first
+              name:asc: Last name (A to Z) then first name (A to Z)
+              name:desc: Last name (Z to A) then first name (A to Z)
+      responses:
+        '200':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Giver'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                additionalProperties: false
+                required:
+                  - data
+                  - pagination
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.read
+      tags:
+        - Givers
+  /giving/pledges/{id}:
+    parameters:
+      - name: id
+        in: path
+        description: ID of the record to retrieve.
+        required: true
+        schema:
+          type: integer
+          format: int32
+          minimum: 1
+    get:
+      operationId: get_pledge
+      summary: Get a pledge
+      description: Retrieve a single pledge identified by ID.
+      responses:
+        '200':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Pledge'
+                additionalProperties: false
+                required:
+                  - data
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.read
+      tags:
+        - Pledges
+    delete:
+      operationId: delete_pledge
+      summary: Delete a pledge
+      description: Delete a single pledge identified by ID.
+      responses:
+        '204':
+          description: Successfully deleted
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.write
+      tags:
+        - Pledges
+    put:
+      operationId: edit_pledge
+      summary: Update a pledge
+      description: Update a single pledge identified by ID.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/PledgeEditOneOff'
+                - $ref: '#/components/schemas/PledgeEditRecurring'
+      responses:
+        '200':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Pledge'
+                additionalProperties: false
+                required:
+                  - data
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.write
+      tags:
+        - Pledges
+  /giving/pledges:
+    get:
+      operationId: list_pledges
+      summary: List pledges
+      description: Returns a list of pledges, sorted by their started_on property.
+      parameters:
+        - $ref: '#/components/parameters/PaginationPage'
+        - $ref: '#/components/parameters/PaginationPerPage'
+        - name: fund_ids[]
+          in: query
+          description: >-
+            Filter records to those matching values in the provided array. This
+            filter uses the logical OR operator.
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int32
+              minimum: 1
+        - name: giver_ids[]
+          in: query
+          description: >-
+            Filter records to those matching values in the provided array. This
+            filter uses the logical OR operator.
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int32
+              minimum: 1
+        - name: starts_before
+          in: query
+          description: Only include records that start before this date.
+          schema:
+            type: string
+            format: date
+            example: '2024-02-24'
+        - name: starts_after
+          in: query
+          description: Only include records that starts after this date.
+          schema:
+            type: string
+            format: date
+            example: '2024-01-24'
+        - name: statuses[]
+          in: query
+          description: >-
+            Filter records to those matching values in the provided array. This
+            filter uses the logical OR operator.
+          schema:
+            type: array
+            items:
+              type: string
+              format: active
+              enum:
+                - active
+                - cancelled
+                - expired
+                - future
+                - incomplete
+      responses:
+        '200':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Pledge'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                additionalProperties: false
+                required:
+                  - data
+                  - pagination
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.read
+      tags:
+        - Pledges
+    post:
+      operationId: create_pledge
+      summary: Create a pledge
+      description: Create a pledge with the provided settings.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/PledgeAddRecurring'
+                - $ref: '#/components/schemas/PledgeAddOneOff'
+      responses:
+        '201':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Pledge'
+                additionalProperties: false
+                required:
+                  - data
+          links:
+            EditPledgeByID:
+              operationId: edit_pledge
+              parameters:
+                id: $response.body#/data/id
+            GetPledgeByID:
+              operationId: get_pledge
+              parameters:
+                id: $response.body#/data/id
+            DeletePledgeByID:
+              operationId: delete_pledge
+              parameters:
+                id: $response.body#/data/id
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.write
+      tags:
+        - Pledges
+  /giving/tags/{id}:
+    parameters:
+      - name: id
+        in: path
+        description: ID of the record to retrieve.
+        required: true
+        schema:
+          type: integer
+          format: int32
+          minimum: 1
+    delete:
+      operationId: delete_giving_tag
+      summary: Delete a tag
+      description: Delete a single tag identified by an ID.
+      responses:
+        '204':
+          description: Successfully deleted
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.write
+      tags:
+        - Tags GI
+    get:
+      operationId: get_giving_tag
+      summary: Get a tag
+      description: Retrieve a single tag identified by ID.
+      responses:
+        '200':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Tag'
+                additionalProperties: false
+                required:
+                  - data
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.read
+      tags:
+        - Tags GI
+    put:
+      operationId: edit_giving_tag
+      summary: Update a tag
+      description: Update a tag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TagEdit'
+      responses:
+        '200':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Tag'
+                additionalProperties: false
+                required:
+                  - data
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.write
+      tags:
+        - Tags GI
+  /giving/tags:
+    get:
+      operationId: list_giving_tag
+      summary: List tags
+      description: Returns a list of tags, sorted alphabetically by name.
+      parameters:
+        - $ref: '#/components/parameters/PaginationPage'
+        - $ref: '#/components/parameters/PaginationPerPage'
+        - name: q
+          in: query
+          description: >-
+            Filter records with a fuzzy string match against the following
+            properties: name.
+          schema:
+            description: A string to query by
+            type: string
+            example: supporters
+            minLength: 1
+        - name: order_by
+          in: query
+          description: Order records by the specified field and sort direction.
+          schema:
+            type: string
+            example: id:asc
+            default: name:asc
+            enum:
+              - created_at:asc
+              - created_at:desc
+              - id:asc
+              - id:desc
+              - modified_at:asc
+              - modified_at:desc
+              - name:asc
+              - name:desc
+            x-enum-descriptions:
+              created_at:asc: Date created, oldest first
+              created_at:desc: Date created, newest first
+              id:asc: ID, lowest first
+              id:desc: ID, highest first
+              modified_at:asc: Date modified, oldest first
+              modified_at:desc: Date modified, newest first
+              name:asc: Name (A to Z)
+              name:desc: Name (Z to A)
+      responses:
+        '200':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Tag'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                additionalProperties: false
+                required:
+                  - data
+                  - pagination
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '409':
+          $ref: '#/components/responses/409'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.read
+      tags:
+        - Tags GI
+    post:
+      operationId: create_giving_tag
+      summary: Create a tag
+      description: Create a tag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TagAdd'
+      responses:
+        '201':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Tag'
+                additionalProperties: false
+                required:
+                  - data
+          links:
+            EditGivingTagByID:
+              operationId: edit_giving_tag
+              parameters:
+                id: $response.body#/data/id
+            DeleteGivingTagByID:
+              operationId: delete_giving_tag
+              parameters:
+                id: $response.body#/data/id
+            CreateGivingTagResource:
+              operationId: create_giving_tag_resource
+              requestBody:
+                tag_id: $response.body#/data/id
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '409':
+          $ref: '#/components/responses/409'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.write
+      tags:
+        - Tags GI
+  /giving/tag_categories/{id}:
+    parameters:
+      - name: id
+        in: path
+        description: ID of the category to retrieve
+        required: true
+        schema:
+          type: integer
+          format: int32
+          minimum: 1
+    get:
+      operationId: get_giving_tag_category
+      summary: Get a tag category
+      description: Retrieve a single tag category identified by ID
+      responses:
+        '200':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/TagCategory'
+                additionalProperties: false
+                required:
+                  - data
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.read
+      tags:
+        - Tags GI
+  /giving/tag_categories:
+    get:
+      operationId: list_giving_tag_categories
+      summary: List tag categories
+      description: Returns a list of tag categories, sorted alphabetically by name.
+      responses:
+        '200':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TagCategory'
+                additionalProperties: false
+                required:
+                  - data
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.read
+      tags:
+        - Tags GI
+  /giving/tag_resources:
+    delete:
+      operationId: delete_giving_tag_resource
+      summary: Delete a tag resource
+      description: >-
+        Delete a single tag resource identified by a giver ID and tag ID,
+        unlinking a giver from a tag.
+      parameters:
+        - name: giver_id
+          in: query
+          description: Filter records by the provided ID.
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+        - name: tag_id
+          in: query
+          description: Filter records by the provided ID.
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+      responses:
+        '204':
+          description: Successfully deleted
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.write
+      tags:
+        - Tags GI
+    get:
+      operationId: list_giving_tag_resources
+      summary: List tag resources
+      description: >-
+        Returns a list of tag resources. A tag resource is the relational model
+        linking a giver to a tag.
+      parameters:
+        - $ref: '#/components/parameters/PaginationPage'
+        - $ref: '#/components/parameters/PaginationPerPage'
+        - name: giver_ids[]
+          in: query
+          description: >-
+            Filter records to those matching values in the provided array. This
+            filter uses the logical OR operator.
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int32
+              minimum: 1
+        - name: tag_ids[]
+          in: query
+          description: >-
+            Filter records to those matching values in the provided array. This
+            filter uses the logical OR operator.
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int32
+              minimum: 1
+      responses:
+        '200':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TagResource'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                additionalProperties: false
+                required:
+                  - data
+                  - pagination
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.read
+      tags:
+        - Tags GI
+    post:
+      operationId: create_giving_tag_resource
+      summary: Create a tag resource
+      description: Create a tag resource linking a giver to a tag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TagResourceAdd'
+      responses:
+        '201':
+          description: OK Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/TagResource'
+                additionalProperties: false
+                required:
+                  - data
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '429':
+          $ref: '#/components/responses/429'
+      security:
+        - oauth_token:
+            - full_access
+        - oauth_token:
+            - giving.write
+      tags:
+        - Tags GI
+components:
+  parameters:
+    PaginationPage:
+      in: query
+      name: page
+      description: Page number of items to return
+      schema:
+        type: integer
+        example: 2
+        default: 1
+        minimum: 1
+    PaginationPerPage:
+      in: query
+      name: per_page
+      description: Number of items to return per request
+      schema:
+        type: integer
+        example: 10
+        default: 50
+        maximum: 250
+        minimum: 1
+    SiteIds:
+      in: query
+      name: site_ids[]
+      description: >-
+        Filter records to those matching values in the provided array. This
+        filter uses the logical OR operator.
+      schema:
+        type: array
+        items:
+          type: integer
+          format: int32
+          minimum: 1
+  schemas:
+    Batch:
+      type: object
+      properties:
+        id:
+          description: The Batch's ID.
+          type: integer
+          example: 12
+          minimum: 1
+        name:
+          description: The name of the Batch.
+          type: string
+          example: Special offering
+        type:
+          description: The Batch type.
+          type: string
+          example: manual
+          enum:
+            - manual
+            - import
+        created_at:
+          description: Date and time the Batch was created in ISO 8601 UTC.
+          type: string
+          format: date-time
+          example: '2014-04-25T10:10:32Z'
+        created_by:
+          description: The user who created the Batch.
+          type: string
+          example: kelly
+        modified_at:
+          description: Date and time the Batch was last modified in ISO 8601 UTC.
+          type: string
+          format: date-time
+          example: '2023-09-19T14:52:40Z'
+        modified_by:
+          description: The user who last modified the Batch.
+          type: string
+          example: anthony
+      additionalProperties: false
+      required:
+        - id
+        - name
+        - type
+        - created_at
+        - created_by
+        - modified_at
+        - modified_by
+    Claim:
+      type: object
+      properties:
+        id:
+          description: The Claim's ID.
+          type: integer
+          example: 12
+          minimum: 1
+        name:
+          description: The name of the Claim.
+          type: string
+          example: GA-YRZC
+        site_ids:
+          description: The Claim's site ID returned in a single item array.
+          type: array
+          items:
+            type: integer
+          example:
+            - 1
+          maxItems: 1
+          minItems: 1
+        starts_at:
+          description: The start date of the Claim.
+          type: string
+          format: date
+          example: '2014-04-25'
+        ends_at:
+          description: The end date of the Claim.
+          type: string
+          format: date
+          example: '2014-04-26'
+        funds:
+          description: Fund details for this Claim
+          type: object
+          additionalProperties: false
+          properties:
+            fund_ids:
+              description: An array of Fund IDs this Claim is linked to
+              type: array
+              items:
+                type: integer
+                example: 1
+                minimum: 1
+              example:
+                - 1
+                - 2
+                - 5
+              minItems: 1
+            all_funds:
+              description: Whether the Claim covers all funds.
+              type: boolean
+              example: false
+          required:
+            - fund_ids
+            - all_funds
+        methods:
+          description: >-
+            List of the giving Methods this Claim covers. Where an empty array
+            is returned, the claim methods represented all methods that were
+            available to the account on the date the claim was created.
+          type: array
+          items:
+            type: string
+          example:
+            - bank
+            - card
+        num_donations:
+          description: The number of donations included in this Claim.
+          type: integer
+          example: 12
+          minimum: 1
+        num_refunds:
+          description: The number of refunds included in this Claim.
+          type: integer
+          example: 5
+          minimum: 0
+        total:
+          description: >-
+            The total amount of all donations included in the Claim, in the
+            smallest unit of the account currency.
+          type: integer
+          example: 3999
+          minimum: 1
+        giftaid_total:
+          description: >-
+            The total (gross) Gift Aid amount included in the Claim, in the
+            smallest unit of the account currency.
+          type: integer
+          example: 254
+          minimum: 0
+        giftaid_refund_total:
+          description: >-
+            The total amount of all refunds included in the Claim, in the
+            smallest unit of the account currency.
+          type: integer
+          example: 199
+          minimum: 0
+        status:
+          description: The current status of the Claim.
+          type: string
+          example: complete
+          enum:
+            - complete
+            - pending
+            - processing
+            - reviewed
+            - submitted
+        claimed_at:
+          description: >-
+            Date and time the Claim was submitted in ISO 8601 UTC or null if the
+            claim has not been submitted.
+          type:
+            - string
+            - 'null'
+          format: date-time
+          example: '2014-04-25T10:10:32Z'
+        claimed_by:
+          description: >-
+            The user who submitted the Claim or null if the claim has not been
+            submitted.
+          type:
+            - string
+            - 'null'
+          example: kelly
+        created_at:
+          description: Date and time the Claim was created in ISO 8601 UTC.
+          type: string
+          format: date-time
+          example: '2014-04-25T10:10:32Z'
+        created_by:
+          description: The user who created the Claim.
+          type: string
+          example: kelly
+        modified_at:
+          description: Date and time the Claim was last modified in ISO 8601 UTC.
+          type: string
+          format: date-time
+          example: '2023-09-19T14:52:40Z'
+        modified_by:
+          description: The user who last modified the Claim.
+          type: string
+          example: anthony
+      additionalProperties: false
+      required:
+        - id
+        - name
+        - site_ids
+        - starts_at
+        - ends_at
+        - funds
+        - methods
+        - num_donations
+        - num_refunds
+        - total
+        - giftaid_total
+        - giftaid_refund_total
+        - status
+        - claimed_at
+        - claimed_by
+        - created_at
+        - created_by
+        - modified_at
+        - modified_by
+    CustomField:
+      description: A Custom Field, as found in several modules
+      type: object
+      properties:
+        id:
+          description: The ID of the Custom Field.
+          type: integer
+          example: 1
+        order:
+          description: Order the Custom Field appears.
+          type: integer
+          example: 1
+        type:
+          description: The Custom Field type.
+          type: string
+          example: text
+          enum:
+            - text
+            - textarea
+            - checkbox
+            - radio
+            - select
+            - date
+            - email
+            - phone
+        name:
+          description: Name of the Custom Field.
+          type: string
+          example: Receive weekly newsletter
+        help:
+          description: Some text to help explain the purpose of the field.
+          type:
+            - string
+            - 'null'
+          example: Tick if you would like to receive the weekly newsletter or not.
+        options:
+          description: >-
+            Field types checkbox, radio or select - will contain options for the
+            field
+          type:
+            - array
+            - 'null'
+          items:
+            type: object
+            properties:
+              help:
+                description: Help text describing the option.
+                type: string
+                example: >-
+                  Selecting this option will opt you into receiving our weekly
+                  newsletters.
+              id:
+                description: UUID of the option.
+                type: string
+                format: uuid
+                example: ffbfc9fd-4579-4370-9783-2e4390cd0e30
+              name:
+                description: Name of the option.
+                type: string
+                example: Yes I would love to receive the newsletter!
+              status:
+                description: Status of the option.
+                type: string
+                example: active
+                enum:
+                  - active
+                  - archived
+            required:
+              - id
+              - name
+              - status
+            additionalProperties: false
+        required:
+          description: Whether the field is required or not.
+          type: boolean
+          example: true
+        settings:
+          description: Settings relating to My, Embed and Connect.
+          type:
+            - object
+            - 'null'
+          properties:
+            my:
+              description: My ChurchSuite and My Consent settings.
+              type: object
+              additionalProperties: false
+              properties:
+                editable:
+                  description: Whether the field is editable in My.
+                  type: boolean
+                  example: false
+                viewable:
+                  description: Whether the field is viewable in My.
+                  type: boolean
+                  example: true
+                required:
+                  description: Whether the field is a required in My.
+                  type: boolean
+                  example: false
+              required:
+                - editable
+                - viewable
+                - required
+            embed:
+              description: Embed settings.
+              type: object
+              additionalProperties: false
+              properties:
+                editable:
+                  description: Whether the field is editable in Embed.
+                  type: boolean
+                  example: false
+                viewable:
+                  description: Whether the field is viewable in Embed.
+                  type: boolean
+                  example: true
+                required:
+                  description: Whether the field is required in Embed.
+                  type: boolean
+                  example: false
+              required:
+                - editable
+                - viewable
+                - required
+            connect:
+              description: Connect settings.
+              type: object
+              additionalProperties: false
+              properties:
+                editable:
+                  description: Whether the field is editable in Connect.
+                  type: boolean
+                  example: false
+                viewable:
+                  description: Whether the field is viewable in Connect.
+                  type: boolean
+                  example: true
+                required:
+                  description: Whether the field is required in Connect.
+                  type: boolean
+                  example: false
+              required:
+                - editable
+                - viewable
+                - required
+        created_at:
+          description: Date and time the Custom Field was created.
+          type:
+            - string
+            - 'null'
+          format: date-time
+          example: '2022-11-17T16:48:13Z'
+        created_by:
+          description: The user who created the Custom Field.
+          type:
+            - string
+            - 'null'
+          example: import
+        modified_at:
+          description: Date and time the Custom Field was last modified.
+          type:
+            - string
+            - 'null'
+          format: date-time
+          example: '2022-11-17T16:48:13Z'
+        modified_by:
+          description: The user who last modified the Custom Field.
+          type:
+            - string
+            - 'null'
+          example: import
+      additionalProperties: false
+      required:
+        - id
+        - order
+        - type
+        - name
+        - help
+        - options
+        - required
+        - settings
+        - created_at
+        - created_by
+        - modified_at
+        - modified_by
+    Declaration:
+      type: object
+      properties:
+        id:
+          description: The Declaration's ID.
+          type: integer
+          example: 12
+          minimum: 1
+        giver_id:
+          description: The ID of the Giver the Declaration is linked to.
+          type: integer
+          example: 87
+          minimum: 1
+        donation_id:
+          description: The ID of the Donation the Declaration is linked to.
+          type:
+            - integer
+            - 'null'
+          example: 16
+          minimum: 1
+        funds:
+          description: Fund details for this Declaration
+          type: object
+          additionalProperties: false
+          properties:
+            fund_ids:
+              description: An array of Fund IDs this Declaration is linked to
+              type: array
+              items:
+                type: integer
+                example: 1
+                minimum: 1
+              example:
+                - 1
+                - 2
+                - 5
+              minItems: 1
+            all_funds:
+              description: Whether the Declaration covers all funds.
+              type: boolean
+              example: false
+          required:
+            - fund_ids
+            - all_funds
+        date_start:
+          description: The start date of the Declaration.
+          type: string
+          format: date
+          example: '2014-04-25'
+        date_end:
+          description: The end date of the Declaration.
+          type:
+            - string
+            - 'null'
+          format: date
+          example: '2014-04-26'
+        digitally_signed:
+          description: The source of the digital signature for this Declaration.
+          type:
+            - string
+            - 'null'
+          example: donate
+        status:
+          description: The current status of the Declaration.
+          type: string
+          example: active
+          enum:
+            - active
+            - expired
+            - future
+        created_at:
+          description: Date and time the Declaration was created in ISO 8601 UTC.
+          type: string
+          format: date-time
+          example: '2014-04-25T10:10:32Z'
+        created_by:
+          description: The user who created the Declaration.
+          type: string
+          example: kelly
+        modified_at:
+          description: Date and time the Declaration was last modified in ISO 8601 UTC.
+          type: string
+          format: date-time
+          example: '2023-09-19T14:52:40Z'
+        modified_by:
+          description: The user who last modified the Declaration.
+          type: string
+          example: anthony
+      additionalProperties: false
+      required:
+        - id
+        - giver_id
+        - donation_id
+        - funds
+        - date_start
+        - date_end
+        - digitally_signed
+        - status
+        - created_at
+        - created_by
+        - modified_at
+        - modified_by
+    Donation:
+      type: object
+      properties:
+        id:
+          description: The Donation's ID.
+          type: integer
+          example: 12
+          minimum: 1
+        batch_id:
+          description: >-
+            The ID of the Batch the Donation is linked to, or null if it isn't
+            linked one.
+          type:
+            - integer
+            - 'null'
+          example: 1226
+          minimum: 1
+        giver_id:
+          description: The ID of the Giver the Donation is linked to.
+          type: integer
+          example: 87
+          minimum: 1
+        fund_id:
+          description: The ID of the Fund the Donation is linked to.
+          type: integer
+          example: 7
+          minimum: 1
+        pledge_id:
+          description: >-
+            The ID of the Pledge the Donation is linked to, or null if it isn't
+            linked one.
+          type:
+            - integer
+            - 'null'
+          example: 87
+          minimum: 1
+        claim_id:
+          description: >-
+            The ID of the Claim the Donation is linked to, or null if it isn't
+            linked to one, or if the account is not in the UK.
+          type:
+            - integer
+            - 'null'
+          example: 365
+          minimum: 1
+        date:
+          description: The date of the Donation.
+          type: string
+          format: date
+          example: '2021-01-01'
+        amount:
+          description: The Donation amount, in the smallest unit of the account currency.
+          type: integer
+          example: 3999
+        method:
+          description: >-
+            The method through which the Donation was made. Value must be either
+            system-defined or a user-defined value from the module settings.
+          type: string
+          example: bank
+        cheque_number:
+          description: >-
+            When method is cheque, the cheque number associated with the
+            Donation.
+          type:
+            - string
+            - 'null'
+          example: '123456'
+          maxLength: 20
+        notes:
+          description: The notes of the Donation.
+          type:
+            - string
+            - 'null'
+          example: Legacy gift
+        giftaid:
+          description: >-
+            The Gift Aid details of the Donation, or null if the account is not
+            in the UK.
+          type:
+            - object
+            - 'null'
+          additionalProperties: false
+          properties:
+            percentage_giver:
+              description: >-
+                The percentage of Gift Aid contribution for the Giver, or null
+                if the Giver is not a couple.
+              type:
+                - integer
+                - 'null'
+              example: 20
+            percentage_spouse:
+              description: >-
+                The percentage of Gift Aid contribution for the Giver's spouse,
+                or null if the Giver is not a couple.
+              type:
+                - integer
+                - 'null'
+              example: 80
+            claimable_amount:
+              description: >-
+                The amount of Gift Aid that is claimable for this Donation, in
+                the smallest unit of the account currency, or null if the Giver
+                does not have a declaration or overrode the declaration.
+              type:
+                - integer
+                - 'null'
+              example: 200
+            claimed_amount:
+              description: >-
+                The amount of Gift Aid that has been claimed for this Donation,
+                in the smallest unit of the account currency, or null if the
+                Donation has not had Gift Aid claimed on it.
+              type:
+                - integer
+                - 'null'
+              example: 200
+            refund_claim_id:
+              description: >-
+                The ID of the Claim the Donation's refunded Gift Aid has been
+                processed in if the Gift Aid has been refunded, or null if the
+                Gift Aid has not been refunded.
+              type:
+                - integer
+                - 'null'
+              example: 365
+            refund_amount:
+              description: >-
+                The amount of Gift Aid that has been refunded for this Donation,
+                in the smallest unit of the account currency, or null if the
+                Gift Aid has not been refunded.
+              type:
+                - integer
+                - 'null'
+              example: 200
+            overridden:
+              description: >-
+                Indicates when Gift Aid has been overridden for the Donation.
+                When true, the Donation should not be subject to Gift Aid, even
+                when a covering declaration exists.
+              type: boolean
+              example: false
+          required:
+            - percentage_giver
+            - percentage_spouse
+            - claimable_amount
+            - claimed_amount
+            - refund_claim_id
+            - refund_amount
+            - overridden
+        tax_deductible:
+          description: >-
+            Whether the Donation is tax deductible. Null for accounts outside of
+            AU, CA, HK and US.
+          type:
+            - boolean
+            - 'null'
+          example: true
+        gateway:
+          description: >-
+            For donations processed through a payment gateway, null if a payment
+            gateway has not been used.
+          type:
+            - object
+            - 'null'
+          additionalProperties: false
+          properties:
+            service:
+              description: The payment gateway used for the Donation.
+              type: string
+              example: Stripe
+            status:
+              description: >-
+                The last reported status for the Donation, as reported by the
+                payment gateway.
+              type:
+                - string
+                - 'null'
+              example: paid
+            payout_id:
+              description: >-
+                The payment gateway's payout ID for the Donation, null if the
+                Donation has not been paid out.
+              type:
+                - string
+                - 'null'
+              example: PO000019JL29J1
+            fees:
+              description: >-
+                The total amount of fees for the Donation, in the smallest unit
+                of the account currency.
+              type:
+                - integer
+                - 'null'
+              example: 113
+            paid_out_at:
+              description: >-
+                Date and time the payment gateway reported the Donation was paid
+                out.
+              type:
+                - string
+                - 'null'
+              format: date
+              example: '2023-09-19'
+            modified_at:
+              description: >-
+                Date and time the payment gateway last reported a change to the
+                Donation.
+              type:
+                - string
+                - 'null'
+              format: date-time
+              example: '2023-09-19T14:52:40Z'
+          required:
+            - service
+            - status
+            - payout_id
+            - fees
+            - paid_out_at
+            - modified_at
+        status:
+          description: The current status of the Donation.
+          type: string
+          example: active
+          enum:
+            - active
+            - deleted
+            - pending
+            - refunded
+        created_at:
+          description: Date and time the Donation was created.
+          type:
+            - string
+            - 'null'
+          format: date-time
+          example: '2014-04-25T10:10:32Z'
+        created_by:
+          description: The user who created the Donation.
+          type:
+            - string
+            - 'null'
+          example: kelly
+        created_source:
+          description: Where the Donation was created.
+          type:
+            - string
+            - 'null'
+          example: Donate
+        modified_at:
+          description: Date and time the Donation was last modified.
+          type:
+            - string
+            - 'null'
+          format: date-time
+          example: '2023-09-19T14:52:40Z'
+        modified_by:
+          description: The user who last modified the Donation.
+          type:
+            - string
+            - 'null'
+          example: anthony
+      additionalProperties: false
+      required:
+        - id
+        - batch_id
+        - giver_id
+        - fund_id
+        - pledge_id
+        - claim_id
+        - date
+        - amount
+        - method
+        - cheque_number
+        - notes
+        - giftaid
+        - tax_deductible
+        - gateway
+        - status
+        - created_at
+        - created_by
+        - created_source
+        - modified_at
+        - modified_by
+    DonationAdd:
+      type: object
+      properties:
+        batch_id:
+          description: The ID of the Batch the Donation is linked to.
+          type: integer
+          example: 1226
+          minimum: 1
+        giver_id:
+          description: The ID of the Giver the Donation is linked to.
+          type: integer
+          example: 87
+          minimum: 1
+        fund_id:
+          description: The ID of the Fund the Donation is linked to.
+          type: integer
+          example: 7
+          minimum: 1
+        pledge_id:
+          description: The ID of the Pledge the Donation is linked to.
+          type: integer
+          example: 87
+          minimum: 1
+        date:
+          description: The date of the Donation.
+          type: string
+          format: date
+          example: '2021-01-01'
+        amount:
+          description: The Donation amount, in the smallest unit of the account currency.
+          type: integer
+          example: 3999
+          minimum: 1
+        method:
+          description: >-
+            The method through which the Donation was made. Value must be either
+            system-defined or a user-defined value from the module settings.
+          type: string
+          example: bank
+          maxLength: 20
+          minLength: 1
+        cheque_number:
+          description: >-
+            When `method` is `cheque`, the cheque number associated with the
+            Donation.
+          type: string
+          example: '123456'
+          maxLength: 20
+          minLength: 1
+        notes:
+          description: The notes of the Donation.
+          type: string
+          example: Legacy gift
+          maxLength: 65535
+          minLength: 1
+        giftaid:
+          type: object
+          additionalProperties: false
+          properties:
+            process:
+              description: >-
+                How the Donation should process Gift Aid. If not present this
+                will default to `auto_detect` for UK accounts, or `null` for
+                non-UK accounts.
+
+                - `auto_detect` - Gift Aid will be claimable where an existing
+                declaration, covering the donation date and fund, is present.
+
+                - `override` - No Gift Aid will be claimable, even if a covering
+                declaration is present.
+
+                - `oneoff` - A one-off declaration will be automatically created
+                against the giver to cover the donation date and fund.
+              type: string
+              example: auto_detect
+              enum:
+                - auto_detect
+                - override
+                - oneoff
+            percentage_giver:
+              description: >-
+                If the linked Giver is a couple, this may be used to override
+                the percentage of the Gift Aid contribution for the Giver. If
+                omitted, this defaults to the value defined on the linked Giver.
+                If this property is provided, `percentage_spouse` must also be
+                provided and the sum of both values must be 100.
+              type: integer
+              maximum: 100
+              minimum: 0
+            percentage_spouse:
+              description: >-
+                If the linked Giver is a couple, this may be used to override
+                the percentage of the Gift Aid contribution for the Giver's
+                spouse. If omitted, this defaults to the value defined on the
+                linked Giver. If this property is provided, `percentage_giver`
+                must also be provided and the sum of both values must be 100.
+              type: integer
+              maximum: 100
+              minimum: 0
+        tax_deductible:
+          description: >-
+            Whether the Donation is tax deductible. If not present this will
+            either respect the setting of the Fund the Donation is linked to, or
+            default to null for accounts without tax deductible giving.
+          type: boolean
+          example: true
+      additionalProperties: false
+      required:
+        - giver_id
+        - fund_id
+        - date
+        - amount
+        - method
+    Flow:
+      description: Flow data, as found in several modules.
+      type: object
+      properties:
+        id:
+          description: The Flow's ID.
+          type: integer
+          example: 1
+          minimum: 1
+        name:
+          description: The Flow's name.
+          type: string
+          example: Welcome new member
+        notification_days:
+          description: >-
+            The days of the week where the Flow's managers receive emails when
+            actions in this Flow are due/overdue, or null if no notification
+            days are set.
+          type:
+            - array
+            - 'null'
+          items:
+            type: string
+            enum:
+              - Monday
+              - Tuesday
+              - Wednesday
+              - Thursday
+              - Friday
+              - Saturday
+              - Sunday
+          example:
+            - Monday
+            - Friday
+            - Sunday
+        visible_in:
+          description: Modules the resource is visible in.
+          type: array
+          items:
+            type: string
+            enum:
+              - addressbook
+              - bookings
+              - children
+              - giving
+          example:
+            - addressbook
+            - bookings
+        visible_to:
+          $ref: '#/components/schemas/Tag/properties/visible_to'
+        status:
+          description: The current status of the Flow.
+          type: string
+          example: active
+          enum:
+            - active
+            - archived
+        archived_at:
+          description: Date and time the Flow was archived.
+          type:
+            - string
+            - 'null'
+          format: date-time
+          example: '2014-04-25T10:10:32Z'
+        created_at:
+          description: Date and time the Flow was created.
+          type:
+            - string
+            - 'null'
+          format: date-time
+          example: '2014-04-25T10:10:32Z'
+        created_by:
+          description: The user who created the Flow.
+          type:
+            - string
+            - 'null'
+          example: jennie
+        modified_at:
+          description: Date and time the Flow was last modified.
+          type:
+            - string
+            - 'null'
+          format: date-time
+          example: '2023-09-19T14:52:40Z'
+        modified_by:
+          description: The user who last modified the Flow.
+          type:
+            - string
+            - 'null'
+          example: caroline
+      additionalProperties: false
+      required:
+        - id
+        - name
+        - notification_days
+        - visible_in
+        - visible_to
+        - status
+        - archived_at
+        - created_at
+        - created_by
+        - modified_at
+        - modified_by
+    FlowStage:
+      type: object
+      properties:
+        id:
+          description: The Stage's ID.
+          type: integer
+          example: 1
+          minimum: 1
+        flow_id:
+          description: The Flow ID the Stage belongs to.
+          type: integer
+          example: 1
+          minimum: 1
+        name:
+          description: The Stage's name.
+          type: string
+          example: Welcome Call
+          maxLength: 50
+          minLength: 1
+        instructions:
+          description: The instructions for the Stage.
+          type: string
+          example: >-
+            Give them a call, see how they found the service and if they have
+            any questions or would like to meet.
+          maxLength: 65535
+          minLength: 0
+        due_interval:
+          description: >-
+            The number of days, weeks or months used for tracking a person
+            linked to the Stage, either relative to when they are first added to
+            the flow or when they are processed from a previous stage.
+          type: integer
+          example: 35
+          minimum: 0
+        due_period:
+          description: >-
+            The due period used for tracking a person linked to the Stage,
+            either relative to when they are first added to the flow or when
+            they are processed from a previous stage.
+          type: string
+          example: days
+          enum:
+            - days
+            - weeks
+            - months
+        due_from:
+          description: >-
+            The relative point used for tracking a person linked to the Stage,
+            either when they are first added to the flow or when they are
+            processed from a previous stage.
+          type: string
+          example: first_added
+          enum:
+            - first_added
+            - previous_stage
+        assigned_user_id:
+          description: >-
+            The ID of the user automatically assigned to people in this stage or
+            null if no user is assigned.
+          type:
+            - integer
+            - 'null'
+          example: 15
+          minimum: 1
+        automate_time:
+          description: >-
+            The UTC time the Stage will automatically process any due or overdue
+            people if it is automated, or null if it is not automated.
+          type:
+            - string
+            - 'null'
+          format: time
+          example: 09:30:00Z
+          pattern: ^([01]\d|2[0-3]):(00|15|30|45):00Z$
+        order:
+          description: The order the Stage appears.
+          type: integer
+          example: 1
+          minimum: 1
+        created_at:
+          description: Date and time the Stage was created.
+          type:
+            - string
+            - 'null'
+          format: date-time
+          example: '2014-04-25T10:10:32Z'
+        created_by:
+          description: The user who created the Stage.
+          type:
+            - string
+            - 'null'
+          example: abraham
+          maxLength: 25
+          minLength: 1
+        modified_at:
+          description: Date and time the Stage was last modified.
+          type:
+            - string
+            - 'null'
+          format: date-time
+          example: '2023-09-19T14:52:40Z'
+        modified_by:
+          description: The user who last modified the Stage.
+          type:
+            - string
+            - 'null'
+          example: zoe
+          maxLength: 25
+          minLength: 1
+      additionalProperties: false
+      required:
+        - id
+        - flow_id
+        - name
+        - instructions
+        - due_interval
+        - due_period
+        - due_from
+        - assigned_user_id
+        - automate_time
+        - order
+        - created_at
+        - created_by
+        - modified_at
+        - modified_by
+    FlowStageAdd:
+      type: object
+      properties:
+        flow_id:
+          description: The Flow ID the Stage belongs to.
+          type: integer
+          example: 1
+          minimum: 1
+        name:
+          description: The Stage's name.
+          type: string
+          example: Welcome Call
+          maxLength: 50
+          minLength: 1
+        instructions:
+          description: The instructions for the Stage.
+          type: string
+          example: >-
+            Give them a call, see how they found the service and if they have
+            any questions or would like to meet.
+          maxLength: 65535
+          minLength: 0
+        due_interval:
+          description: >-
+            The number of days, weeks or months used for tracking a person
+            linked to the Stage, either relative to when they are first added to
+            the flow or when they are processed from a previous stage.
+          type: integer
+          example: 35
+          minimum: 0
+        due_period:
+          description: >-
+            The due period used for tracking a person linked to the Stage,
+            either relative to when they are first added to the flow or when
+            they are processed from a previous stage.
+          type: string
+          example: days
+          enum:
+            - days
+            - weeks
+            - months
+        due_from:
+          description: >-
+            The relative point used for tracking a person linked to the Stage,
+            either when they are first added to the flow or when they are
+            processed from a previous stage.
+          type: string
+          example: previous_stage
+          enum:
+            - first_added
+            - previous_stage
+        assigned_user_id:
+          description: >-
+            The ID of the user automatically assigned to people in this stage,
+            or null if no user is assigned.
+          type: integer
+          example: 3
+          minimum: 1
+        automate_time:
+          description: >-
+            The UTC time the Stage will automatically process any due or overdue
+            people if it is automated, or null if it is not automated.
+          type: string
+          format: time
+          example: 09:30:00Z
+          pattern: ^([01]\d|2[0-3]):(00|15|30|45):00Z$
+      additionalProperties: false
+      required:
+        - flow_id
+        - name
+        - due_interval
+        - due_period
+        - due_from
+    FlowStageEdit:
+      type: object
+      properties:
+        name:
+          description: The Stage's name.
+          type: string
+          example: Welcome Call
+          maxLength: 50
+          minLength: 1
+        instructions:
+          description: The instructions for the Stage.
+          type: string
+          example: >-
+            Give them a call, see how they found the service and if they have
+            any questions or would like to meet.
+          maxLength: 65535
+          minLength: 0
+        due_interval:
+          description: >-
+            The number of days, weeks or months used for tracking a person
+            linked to the Stage, either relative to when they are first added to
+            the flow or when they are processed from a previous stage.
+          type: integer
+          example: 35
+          minimum: 0
+        due_period:
+          description: >-
+            The due period used for tracking a person linked to the Stage,
+            either relative to when they are first added to the flow or when
+            they are processed from a previous stage.
+          type: string
+          example: days
+          enum:
+            - days
+            - weeks
+            - months
+        due_from:
+          description: >-
+            The relative point used for tracking a person linked to the Stage,
+            either when they are first added to the flow or when they are
+            processed from a previous stage.
+          type: string
+          example: first_added
+          enum:
+            - first_added
+            - previous_stage
+        assigned_user_id:
+          description: >-
+            The ID of the user automatically assigned to people in this stage,
+            or null if no user is assigned.
+          type:
+            - integer
+            - 'null'
+          example: 33
+          minimum: 1
+        automate_time:
+          description: >-
+            The UTC time the Stage will automatically process any due or overdue
+            people if it is automated, or null if it is not automated.
+          type:
+            - string
+            - 'null'
+          format: time
+          example: 09:30:00Z
+          pattern: ^([01]\d|2[0-3]):(00|15|30|45):00Z$
+      additionalProperties: false
+      required:
+        - name
+        - instructions
+        - due_interval
+        - due_period
+        - due_from
+        - assigned_user_id
+        - automate_time
+    FlowTracking:
+      description: A single Flow Tracking as found in several modules.
+      type: object
+      properties:
+        id:
+          description: The Tracking ID.
+          type: integer
+          example: 1
+          minimum: 1
+        flow_id:
+          description: The Flow ID the Tracking is linked to.
+          type: integer
+          example: 1
+          minimum: 1
+        stage_id:
+          description: >-
+            The Stage ID the Tracking is linked to, or null if the person has
+            completed the flow process.
+          type:
+            - integer
+            - 'null'
+          example: 1
+          minimum: 1
+        person:
+          description: The Tracking's Person details.
+          type: object
+          additionalProperties: false
+          properties:
+            type:
+              description: >-
+                The Person's type, indicating whether they are a Contact,
+                Customer, Child or Giver.
+              type: string
+              example: addressbook_contact
+              enum:
+                - addressbook_contact
+                - bookings_customer
+                - children_child
+                - giving_giver
+            id:
+              description: The Person's ID.
+              type: integer
+              example: 12
+              minimum: 1
+          required:
+            - type
+            - id
+        status:
+          description: The Tracking's status.
+          type: string
+          example: overdue
+          enum:
+            - completed
+            - due
+            - overdue
+            - pending
+        due_date:
+          description: The Tracking's due date.
+          type: string
+          format: date
+          example: '2026-05-21'
+        assigned_user_id:
+          description: The Tracking's assigned User ID, or null if not assigned to a user.
+          type:
+            - integer
+            - 'null'
+          example: 1
+          minimum: 1
+        created_at:
+          description: Date and time the Tracking was created.
+          type:
+            - string
+            - 'null'
+          format: date-time
+          example: '2014-04-25T10:10:32Z'
+        created_by:
+          description: The user who created the Tracking.
+          type:
+            - string
+            - 'null'
+          example: jennie
+        modified_at:
+          description: Date and time the Tracking was last modified.
+          type:
+            - string
+            - 'null'
+          format: date-time
+          example: '2023-09-19T14:52:40Z'
+        modified_by:
+          description: The user who last modified the Tracking.
+          type:
+            - string
+            - 'null'
+          example: caroline
+      additionalProperties: false
+      required:
+        - id
+        - flow_id
+        - stage_id
+        - person
+        - status
+        - due_date
+        - assigned_user_id
+        - created_at
+        - created_by
+        - modified_at
+        - modified_by
+    FlowTrackingAdd:
+      type: object
+      properties:
+        flow_id:
+          description: The Flow ID the Tracking is linked to.
+          type: integer
+          example: 1
+          minimum: 1
+        stage_id:
+          description: The Stage ID the Tracking is linked to.
+          type: integer
+          example: 1
+          minimum: 1
+        person:
+          description: The Tracking's Person details.
+          type: object
+          additionalProperties: false
+          properties:
+            type:
+              description: >-
+                The Person's type, indicating whether they are a Child, Contact,
+                Customer or Giver.
+              type: string
+              example: children_child
+              const: children_child
+            id:
+              description: The Person's ID.
+              type: integer
+              example: 12
+              minimum: 1
+          required:
+            - type
+            - id
+      additionalProperties: false
+      required:
+        - flow_id
+        - stage_id
+        - person
+    FlowTrackingEdit:
+      type: object
+      properties:
+        due_date:
+          description: The Tracking's due date.
+          type: string
+          format: date
+          example: '2026-05-21'
+        assigned_user_id:
+          description: The Tracking's assigned user ID, or null if not assigned to a user.
+          type:
+            - integer
+            - 'null'
+          example: 1
+          minimum: 1
+      additionalProperties: false
+      required:
+        - due_date
+        - assigned_user_id
+    Fund:
+      type: object
+      properties:
+        id:
+          description: The Fund's ID.
+          type: integer
+          example: 12
+          minimum: 1
+        identifier:
+          description: The unique identifier for the Fund.
+          type: string
+          example: es4fj4sg
+        name:
+          description: The name of the Fund.
+          type: string
+          example: General Church Fund
+        color:
+          description: The Fund's hexadecimal colour value.
+          type: string
+          example: '#ab12cd'
+        brand_id:
+          description: The Brand ID linked to the Fund.
+          type: integer
+          example: 1
+          minimum: 1
+        visible_in_donate:
+          description: Whether the Fund is shown in Donate or not.
+          type: boolean
+          example: true
+        visible_in_tap_to_donate:
+          description: Whether the Fund is shown in Tap to Donate or not.
+          type: boolean
+          example: true
+        donate_frequency:
+          description: The frequency of the donation.
+          type: string
+          example: oneoff_recurring
+          enum:
+            - oneoff
+            - oneoff_recurring
+            - recurring
+        tap_to_donate_amounts:
+          description: >-
+            The preset amounts in the smallest monetary unit available for this
+            fund within the Tap to Donate app.
+          type: array
+          items:
+            type: integer
+            minimum: 1
+          example:
+            - 500
+            - 1000
+            - 1500
+        gift_aid:
+          description: >-
+            Whether Gift Aid can be claimed on this Fund, or null if your
+            account cannot have Gift Aid applied to it.
+          type:
+            - boolean
+            - 'null'
+          example: false
+        tax_deductible:
+          description: >-
+            Whether this Fund is tax deductible, or null if your accounts
+            country does not have tax deductible giving.
+          type:
+            - boolean
+            - 'null'
+          example: true
+        confirmation_email:
+          description: Confirmation email details.
+          type: object
+          additionalProperties: false
+          properties:
+            sender_email:
+              description: The sender's email address for the confirmation email.
+              type: string
+              format: email
+              example: admin@kingshopechurch.co.uk
+            sender_name:
+              description: The sender's name for the confirmation email.
+              type: string
+              example: Kings Hope Booking
+            subject:
+              description: The subject for the confirmation email.
+              type: string
+              example: You're booked!
+            body:
+              description: The html body for the confirmation email.
+              type: string
+              example: >-
+                <div>Dear ::first_name::,</div> <div>&nbsp;</div> <div>Here are
+                your details!</div>
+          required:
+            - sender_email
+            - sender_name
+            - subject
+            - body
+        description:
+          description: The description of the Fund.
+          type: string
+          example: This fund is for regular giving to the church in all areas.
+        order:
+          description: The position of the Fund when ordered.
+          type: integer
+          example: 12
+          minimum: 1
+        status:
+          description: The current status of the Fund.
+          type: string
+          example: active
+          enum:
+            - active
+            - archived
+        image:
+          description: A collection of different sized variations of an Image.
+          type:
+            - object
+            - 'null'
+          additionalProperties: false
+          properties:
+            thumbnail:
+              description: The thumbnail Image url. Thumbnail images are 128x128px.
+              type: string
+              format: url
+              example: https://cdn.churchsuite.com/abcdefgh/smallgroups/groups/x_thumb.jpg
+            small:
+              description: The small resolution Image url
+              type: string
+              format: url
+              example: https://cdn.churchsuite.com/abcdefgh/smallgroups/groups/x_sm.jpg
+            medium:
+              description: The medium resolution Image url
+              type: string
+              format: url
+              example: https://cdn.churchsuite.com/abcdefgh/smallgroups/groups/x_md.jpg
+            large:
+              description: The large resolution Image url
+              type: string
+              format: url
+              example: https://cdn.churchsuite.com/abcdefgh/smallgroups/groups/x_lg.jpg
+            uploaded_at:
+              description: Date and time the Image was uploaded at.
+              type:
+                - string
+                - 'null'
+              format: date-time
+              example: '2014-04-25T10:10:32Z'
+          required:
+            - thumbnail
+            - small
+            - medium
+            - large
+            - uploaded_at
+        archived_at:
+          description: Date and time the Fund was archived.
+          type:
+            - string
+            - 'null'
+          format: date-time
+          example: '2023-09-19T14:52:40Z'
+        created_at:
+          description: Date and time the Fund was created.
+          type:
+            - string
+            - 'null'
+          format: date-time
+          example: '2023-09-19T14:52:40Z'
+        created_by:
+          description: The user who created the Fund.
+          type:
+            - string
+            - 'null'
+          example: anthony
+        modified_at:
+          description: Date and time the Fund was last modified.
+          type:
+            - string
+            - 'null'
+          format: date-time
+          example: '2023-09-19T14:52:40Z'
+        modified_by:
+          description: The user who last modified the Fund.
+          type:
+            - string
+            - 'null'
+          example: anthony
+      additionalProperties: false
+      required:
+        - id
+        - identifier
+        - name
+        - color
+        - brand_id
+        - visible_in_donate
+        - donate_frequency
+        - tap_to_donate_amounts
+        - gift_aid
+        - tax_deductible
+        - confirmation_email
+        - description
+        - order
+        - status
+        - image
+        - archived_at
+        - created_at
+        - created_by
+        - modified_at
+        - modified_by
+    FundAdd:
+      type: object
+      properties:
+        name:
+          description: The name of the Fund.
+          type: string
+          example: General Church Fund
+          maxLength: 50
+          minLength: 1
+        color:
+          description: The Fund's hexadecimal colour value.
+          type: string
+          example: '#ab12cd'
+          pattern: ^#([a-f0-9]{6})$
+        brand_id:
+          description: >-
+            The Brand ID linked to the Fund. If not provided, the default Brand
+            ID will be used.
+          type: integer
+          example: 1
+          minimum: 1
+        visible_in_donate:
+          description: Whether the Fund is shown in Donate or not.
+          type: boolean
+          example: true
+          default: false
+        visible_in_tap_to_donate:
+          description: Whether the Fund is shown in Tap to Donate or not.
+          type: boolean
+          example: true
+          default: false
+        donate_frequency:
+          description: >-
+            The frequency of the donation. If visible_in_donate is false, this
+            will be ignored.
+          type: string
+          default: oneoff_recurring
+          enum:
+            - oneoff
+            - oneoff_recurring
+            - recurring
+          examples:
+            - oneoff
+            - oneoff_recurring
+            - recurring
+        tap_to_donate_amounts:
+          description: >-
+            The preset amounts in the smallest monetary unit available for this
+            fund within the Tap to Donate app. The default amounts are only
+            respected if visible_in_tap_to_donate is true and there are no
+            preset amounts in the request.
+          type: array
+          items:
+            type: integer
+            minimum: 100
+          example:
+            - 500
+            - 1000
+            - 1500
+            - 5000
+          default:
+            - 500
+            - 1000
+            - 2000
+            - 3000
+          maxItems: 4
+          minItems: 1
+        gift_aid:
+          description: >-
+            Whether Gift Aid can be claimed on this Fund. If visible_in_donate
+            is false, this will be ignored. Do not include this field if your
+            account cannot have Gift Aid applied to it.
+          type: boolean
+          example: false
+          default: false
+        tax_deductible:
+          description: >-
+            Whether this Fund is tax deductible. Do not include this field if
+            account's country does not have tax deductible giving.
+          type: boolean
+          example: true
+          default: false
+        confirmation_email:
+          description: Add confirmation email details.
+          type: object
+          additionalProperties: false
+          properties:
+            sender_email:
+              description: >-
+                The sender's email address for the confirmation email. If not
+                provided the Account no-reply email address will be used.
+              type: string
+              format: email
+              example: admin@kingshopechurch.co.uk
+              maxLength: 100
+              minLength: 1
+            sender_name:
+              description: >-
+                The sender's name for the confirmation email. If not provided
+                the Account name will be used with a suffix of Giving.
+              type: string
+              example: Kings Hope Giving
+              maxLength: 50
+              minLength: 1
+            subject:
+              description: >-
+                The subject for the confirmation email. If not provided the
+                Account name will be used with the Fund's name.
+              type: string
+              example: '[Kings Hope Church] Building Fund'
+              maxLength: 100
+              minLength: 1
+            body:
+              description: >-
+                The HTML body for the confirmation email. Available merge fields
+                for the body are ::first_name::, ::last_name:: and ::email::.
+              type: string
+              example: >-
+                <div>Dear ::first_name::,</div> <div>&nbsp;</div> <div>Here are
+                your details!</div>
+              maxLength: 65535
+              minLength: 1
+          required:
+            - body
+        description:
+          description: The description of the Fund.
+          type: string
+          example: This fund is for regular giving to the church in all areas.
+          maxLength: 65535
+          minLength: 1
+      additionalProperties: false
+      required:
+        - name
+        - color
+    FundEdit:
+      type: object
+      properties:
+        name:
+          description: The name of the Fund.
+          type: string
+          example: General Church Fund
+          maxLength: 50
+          minLength: 1
+        color:
+          description: The Fund's hexadecimal colour value.
+          type: string
+          example: '#ab12cd'
+          pattern: ^#([a-f0-9]{6})$
+        brand_id:
+          description: The Brand ID linked to the Fund.
+          type: integer
+          example: 1
+          minimum: 1
+        visible_in_donate:
+          description: Whether the Fund is shown in Donate or not.
+          type: boolean
+          example: true
+        visible_in_tap_to_donate:
+          description: Whether the Fund is shown in Tap to Donate or not.
+          type: boolean
+          example: true
+        donate_frequency:
+          description: The frequency of the donation.
+          type: string
+          enum:
+            - oneoff
+            - oneoff_recurring
+            - recurring
+          examples:
+            - oneoff
+            - oneoff_recurring
+            - recurring
+        tap_to_donate_amounts:
+          description: >-
+            The preset amounts in the smallest monetary unit available for this
+            fund within the Tap to Donate app. If visible_in_tap_to_donate is
+            true and there are no preset amounts in the request, the default
+            amounts will be used.
+          type: array
+          items:
+            type: integer
+            minimum: 1
+          example:
+            - 500
+            - 1000
+            - 1500
+            - 5000
+          default:
+            - 500
+            - 1000
+            - 2000
+            - 3000
+          maxItems: 4
+        gift_aid:
+          description: >-
+            Whether Gift Aid can be claimed on this Fund, if your account can
+            have Gift Aid applied to it. This is required if your account has
+            Gift Aid enabled.
+          type: boolean
+          example: false
+        tax_deductible:
+          description: >-
+            Whether this Fund is tax deductible, if your account's country has
+            tax deductible giving. This is required if your account has tax
+            deductible giving enabled.
+          type: boolean
+          example: true
+        confirmation_email:
+          description: Edit confirmation email details.
+          type: object
+          additionalProperties: false
+          properties:
+            sender_email:
+              description: >-
+                The sender's email address for the confirmation email. If not
+                provided the Account no-reply email address will be used.
+              type: string
+              format: email
+              example: admin@kingshopechurch.co.uk
+              maxLength: 100
+            sender_name:
+              description: >-
+                The sender's name for the confirmation email. If not provided
+                the Account name will be used with a suffix of Giving.
+              type: string
+              example: Kings Hope Giving
+              maxLength: 50
+            subject:
+              description: >-
+                The subject for the confirmation email. If not provided the
+                Account name will be used with the Fund's name.
+              type: string
+              example: '[Kings Hope Church] Building Fund'
+              maxLength: 100
+            body:
+              description: >-
+                The HTML body for the confirmation email. Available merge fields
+                for the body are ::first_name::, ::last_name:: and ::email::.
+              type: string
+              example: >-
+                <div>Dear ::first_name::,</div> <div>&nbsp;</div> <div>Here are
+                your details!</div>
+              maxLength: 65535
+          required:
+            - sender_email
+            - sender_name
+            - subject
+            - body
+        description:
+          description: The description of the Fund.
+          type: string
+          example: This fund is for regular giving to the church in all areas.
+          maxLength: 65535
+      additionalProperties: false
+      required:
+        - name
+        - color
+        - brand_id
+        - visible_in_donate
+        - visible_in_tap_to_donate
+        - donate_frequency
+        - tap_to_donate_amounts
+        - confirmation_email
+        - description
+    Giver:
+      type: object
+      properties:
+        id:
+          description: The Giver's ID.
+          type: integer
+          example: 12
+          minimum: 1
+        contact_id:
+          description: The Contact ID, if the Giver is linked to a Contact.
+          type:
+            - integer
+            - 'null'
+          example: 256
+          minimum: 1
+        reference:
+          description: The unique reference identifier for the Giver.
+          type: string
+          example: G-0128
+        bank_references:
+          description: An array of bank references for the Giver.
+          type: array
+          items:
+            type: string
+          example:
+            - JaneSmith
+            - JohnDoe
+        first_name:
+          description: The Giver's first name.
+          type: string
+          example: Kev
+        last_name:
+          description: The Giver's last name.
+          type: string
+          example: Bramley
+        mobile:
+          description: The mobile number of the Giver.
+          type: string
+          example: '07700700153'
+        email:
+          description: The email address of the Giver.
+          type:
+            - string
+            - 'null'
+          format: email
+          example: kevbramley@kingshopechurch.com
+        telephone:
+          description: The phone number of the Giver.
+          type: string
+          example: '01154960231'
+        is_couple:
+          description: Whether the Giver is a couple or not.
+          type: boolean
+          example: true
+        spouse_first_name:
+          description: The spouse's first name, null if the giver is not a couple.
+          type:
+            - string
+            - 'null'
+          example: John
+        spouse_last_name:
+          description: The spouse's last name, null if the giver is not a couple.
+          type:
+            - string
+            - 'null'
+          example: Smith
+        giftaid_percentage_giver:
+          description: >-
+            The percentage of giftaid contribution for the Giver, or null if the
+            giver is not a couple or the account is not in the UK.
+          type:
+            - integer
+            - 'null'
+          example: 50
+          maximum: 100
+          minimum: 0
+        giftaid_percentage_spouse:
+          description: >-
+            The percentage of giftaid contribution for the Giver's spouse, or
+            null if the giver is not a couple or the account is not in the UK.
+          type:
+            - integer
+            - 'null'
+          example: 50
+          maximum: 100
+          minimum: 0
+        first_donation_date:
+          description: >-
+            The date of the Give's first donation or null if no donations have
+            been made.
+          type:
+            - string
+            - 'null'
+          format: date
+          example: '2014-04-25'
+        last_donation_date:
+          description: >-
+            The date of the Give's last donation or null if no donations have
+            been made.
+          type:
+            - string
+            - 'null'
+          format: date
+          example: '2024-08-17'
+        site_ids:
+          description: The Giver's site ID returned in a single item array.
+          type: array
+          items:
+            type: integer
+          example:
+            - 1
+          maxItems: 1
+          minItems: 1
+        address:
+          description: A street Address.
+          type:
+            - object
+            - 'null'
+          additionalProperties: false
+          properties:
+            line_1:
+              description: The first line of the Address
+              type: string
+              example: Floor 2
+            line_2:
+              description: The second line of the Address
+              type: string
+              example: 1 Broadway
+            line_3:
+              description: The third line of the Address
+              type:
+                - string
+                - 'null'
+              example: Lace Market
+            city:
+              description: The city of the Address
+              type: string
+              example: Nottingham
+            county:
+              description: The county of the Address
+              type: string
+              example: Nottinghamshire
+            country:
+              description: The country of the Address, in ISO3166 alpha 2 format
+              type:
+                - string
+                - 'null'
+              example: GB
+              maxLength: 2
+              minLength: 2
+            postcode:
+              description: The postcode of the Address
+              type: string
+              example: NG1 1PR
+            latitude:
+              description: The latitude of the Address, to 6 decimal places
+              type:
+                - number
+                - 'null'
+              format: float
+              example: 52.952089
+            longitude:
+              description: The longitude of the Address, to 6 decimal places
+              type:
+                - number
+                - 'null'
+              format: float
+              example: -1.1448
+          required:
+            - line_1
+            - line_2
+            - line_3
+            - city
+            - county
+            - country
+            - postcode
+            - latitude
+            - longitude
+        custom_fields:
+          description: Custom Field responses for this resource
+          type: array
+          items:
+            type: object
+            description: Custom Field responses for this resource
+            properties:
+              id:
+                description: The ID of the Custom Field
+                type: integer
+                example: 1
+              field_type:
+                description: >-
+                  A discriminator to determine the type of Custom Field this
+                  response belongs to.
+                type: string
+                example: text
+                enum:
+                  - checkbox
+                  - date
+                  - email
+                  - phone
+                  - radio
+                  - select
+                  - text
+                  - textarea
+              value:
+                oneOf:
+                  - type: string
+                    description: The raw value of a text, textarea, email, phone or date.
+                    example: support@churchsuite.com
+                  - type: object
+                    description: >-
+                      The UUID of the selected response for a radio or select
+                      field.
+                    example:
+                      id: ffbfc9fd-4579-4370-9783-2e4390cd0e30
+                    properties:
+                      id:
+                        description: The UUID
+                        type: string
+                        format: uuid
+                        example: ffbfc9fd-4579-4370-9783-2e4390cd0e30
+                        maxLength: 36
+                        minLength: 36
+                    required:
+                      - id
+                    additionalProperties: false
+                  - type: array
+                    description: >-
+                      An array of objects which contains the UUIDs of the
+                      selected responses for a checkbox field. If no checkboxes
+                      are selected an empty array will be returned.
+                    items:
+                      type: object
+                      description: >-
+                        The UUID of the selected response for a radio or select
+                        field.
+                      example:
+                        id: ffbfc9fd-4579-4370-9783-2e4390cd0e30
+                      properties:
+                        id:
+                          description: The UUID
+                          type: string
+                          format: uuid
+                          example: ffbfc9fd-4579-4370-9783-2e4390cd0e30
+                          maxLength: 36
+                          minLength: 36
+                      required:
+                        - id
+                      additionalProperties: false
+                  - type: 'null'
+            required:
+              - id
+              - value
+              - field_type
+            additionalProperties: false
+        status:
+          description: Current status of the Giver.
+          type: string
+          example: active
+          enum:
+            - active
+            - archived
+        archived_at:
+          description: Date and time the Giver's record was archived.
+          type:
+            - string
+            - 'null'
+          format: date-time
+          example: '2014-04-25T10:10:32Z'
+        created_at:
+          description: Date and time the Giver's record was created.
+          type:
+            - string
+            - 'null'
+          format: date-time
+          example: '2014-04-25T10:10:32Z'
+        created_by:
+          description: The user who created the Giver's record.
+          type:
+            - string
+            - 'null'
+          example: neil
+        modified_at:
+          description: Date and time the Giver's record was last modified.
+          type:
+            - string
+            - 'null'
+          format: date-time
+          example: '2023-09-19T14:52:40Z'
+        modified_by:
+          description: The user who last modified the Giver's record.
+          type:
+            - string
+            - 'null'
+          example: anthony
+      additionalProperties: false
+      required:
+        - id
+        - contact_id
+        - reference
+        - bank_references
+        - first_name
+        - last_name
+        - mobile
+        - email
+        - telephone
+        - is_couple
+        - spouse_first_name
+        - spouse_last_name
+        - giftaid_percentage_giver
+        - giftaid_percentage_spouse
+        - first_donation_date
+        - last_donation_date
+        - site_ids
+        - address
+        - custom_fields
+        - status
+        - archived_at
+        - created_at
+        - created_by
+        - modified_at
+        - modified_by
+    Note:
+      description: A single Note, as found in multiple modules.
+      type: object
+      properties:
+        id:
+          description: The ID of the Note.
+          type: integer
+          example: 1
+          minimum: 1
+          readOnly: true
+        content:
+          description: The content of the Note.
+          example: Had a conversation about this on 12th of July.
+          type: string
+        pinned:
+          description: Whether the Note has been pinned.
+          type: boolean
+          example: true
+        visible_to:
+          $ref: '#/components/schemas/Tag/properties/visible_to'
+        created_at:
+          description: Date and time the Note was created.
+          type:
+            - string
+            - 'null'
+          format: date-time
+          example: '2014-04-25T10:10:32Z'
+          readOnly: true
+        created_by:
+          description: The user who created the Note.
+          type:
+            - string
+            - 'null'
+          example: neil
+          readOnly: true
+        modified_at:
+          description: Date and time the Note was last modified.
+          type:
+            - string
+            - 'null'
+          format: date-time
+          example: '2023-09-19T14:52:40Z'
+          readOnly: true
+        modified_by:
+          description: The user who last modified the Note.
+          type:
+            - string
+            - 'null'
+          example: anthony
+          readOnly: true
+      additionalProperties: false
+      required:
+        - id
+        - content
+        - pinned
+        - visible_to
+        - created_at
+        - created_by
+        - modified_at
+        - modified_by
+    NoteAdd:
+      type: object
+      properties:
+        content:
+          description: The content of the Note.
+          example: Had a conversation about this on 12th of July.
+          maxLength: 65535
+          minLength: 1
+          type: string
+        pinned:
+          description: Whether the Note should be pinned.
+          type: boolean
+          example: true
+          default: false
+        visible_to:
+          $ref: '#/components/schemas/TagAdd/properties/visible_to'
+      additionalProperties: false
+      required:
+        - content
+    Pagination:
+      type: object
+      properties:
+        num_results:
+          description: The total number of results available
+          type: integer
+          format: int32
+          minimum: 0
+        per_page:
+          description: The requested number of results per page
+          type: integer
+          format: int32
+          minimum: 1
+        page:
+          description: The current page of results
+          type: integer
+          format: int32
+          minimum: 1
+        next_page:
+          description: The page number of the next page of results, if there is one
+          type:
+            - integer
+            - 'null'
+          format: int32
+          minimum: 1
+        prev_page:
+          description: The page number of the previous page of results, if there is one
+          type:
+            - integer
+            - 'null'
+          format: int32
+          minimum: 1
+      additionalProperties: false
+      required:
+        - num_results
+        - per_page
+        - page
+        - next_page
+        - prev_page
+    PledgeAddOneOff:
+      description: Create a one-off Pledge, to donate a certain amount on a certain date.
+      type: object
+      properties:
+        giver_id:
+          description: The Giver ID the Pledge is linked to.
+          type: integer
+          example: 256
+          minimum: 1
+        fund_id:
+          description: The Fund ID the Pledge is linked to.
+          type: integer
+          example: 256
+          minimum: 1
+        starts_at:
+          description: The date the Pledge begins.
+          type: string
+          format: date
+          example: '2023-01-20'
+        amount_oneoff:
+          description: >-
+            The Pledge's one off amount in the smallest monetary unit of your
+            account's currency.
+          type: integer
+          example: 5025
+          minimum: 1
+      additionalProperties: false
+      required:
+        - giver_id
+        - fund_id
+        - starts_at
+        - amount_oneoff
+      title: Create a one-off Pledge.
+    PledgeAddRecurring:
+      description: Create a recurring Pledge, with an optional additional one-off donation.
+      type: object
+      properties:
+        giver_id:
+          description: The Giver ID the Pledge is linked to.
+          type: integer
+          example: 256
+          minimum: 1
+        fund_id:
+          description: The Fund ID the Pledge is linked to.
+          type: integer
+          example: 256
+          minimum: 1
+        frequency:
+          description: The Pledge's frequency.
+          type: string
+          example: monthly
+          default: weekly
+          enum:
+            - weekly
+            - fortnightly
+            - twice-monthly
+            - monthly
+            - quarterly
+            - yearly
+        starts_at:
+          description: The date the Pledge begins.
+          type: string
+          format: date
+          example: '2023-01-20'
+        ends_at:
+          description: The date the Pledge ends.
+          type: string
+          format: date
+          example: '2023-01-20'
+        amount_recurring:
+          description: >-
+            The Pledge's recurring amount in the smallest monetary unit of your
+            account's currency.
+          type: integer
+          example: 5025
+          minimum: 1
+        amount_oneoff:
+          description: >-
+            The Pledge's one off amount in the smallest monetary unit of your
+            account's currency.
+          type: integer
+          example: 5025
+          minimum: 1
+      additionalProperties: false
+      required:
+        - giver_id
+        - fund_id
+        - frequency
+        - starts_at
+        - amount_recurring
+      title: Create a recurring Pledge.
+    PledgeEditOneOff:
+      description: Edit a one-off Pledge, to donate a certain amount on a certain date.
+      type: object
+      properties:
+        fund_id:
+          description: The Fund ID the Pledge is linked to.
+          type: integer
+          example: 256
+          minimum: 1
+        frequency:
+          description: >-
+            The Pledge's frequency. This is only respected if the Pledge has an
+            amount_recurring non-null value.
+          type: string
+          example: monthly
+          enum:
+            - weekly
+            - fortnightly
+            - twice-monthly
+            - monthly
+            - quarterly
+            - yearly
+        starts_at:
+          description: The date the Pledge begins.
+          type: string
+          format: date
+          example: '2023-01-20'
+        ends_at:
+          description: The date the Pledge ends.
+          type:
+            - string
+            - 'null'
+          format: date
+          example: '2023-01-20'
+        amount_recurring:
+          description: The Pledge's recurring amount - 'null' for a one-off pledge.
+          type:
+            - 'null'
+        amount_oneoff:
+          description: >-
+            The Pledge's one off amount in the smallest monetary unit of your
+            account's currency.
+          type: integer
+          example: 5025
+      additionalProperties: false
+      required:
+        - fund_id
+        - frequency
+        - starts_at
+        - ends_at
+        - amount_recurring
+        - amount_oneoff
+      title: Edit a one-off Pledge.
+    PledgeEditRecurring:
+      description: Edit a recurring Pledge, with an optional additional one-off donation.
+      type: object
+      properties:
+        fund_id:
+          description: The Fund ID the Pledge is linked to.
+          type: integer
+          example: 256
+          minimum: 1
+        frequency:
+          description: >-
+            The Pledge's frequency. This is only respected if the Pledge has an
+            amount_recurring non-null value.
+          type: string
+          example: monthly
+          enum:
+            - weekly
+            - fortnightly
+            - twice-monthly
+            - monthly
+            - quarterly
+            - yearly
+        starts_at:
+          description: The date the Pledge begins.
+          type: string
+          format: date
+          example: '2023-01-20'
+        ends_at:
+          description: The date the Pledge ends.
+          type:
+            - string
+            - 'null'
+          format: date
+          example: '2023-01-20'
+        amount_recurring:
+          description: >-
+            The Pledge's recurring amount in the smallest monetary unit of your
+            account's currency.
+          type: integer
+          example: 5025
+        amount_oneoff:
+          description: >-
+            The Pledge's one off amount in the smallest monetary unit of your
+            account's currency.
+          type:
+            - integer
+            - 'null'
+          example: 5025
+      additionalProperties: false
+      required:
+        - fund_id
+        - frequency
+        - starts_at
+        - ends_at
+        - amount_recurring
+        - amount_oneoff
+      title: Edit a recurring Pledge.
+    Pledge:
+      type: object
+      properties:
+        id:
+          description: The Pledge's ID.
+          type: integer
+          example: 12
+          minimum: 1
+        giver_id:
+          description: The Giver ID the Pledge is linked to.
+          type: integer
+          example: 256
+          minimum: 1
+        fund_id:
+          description: The Fund ID the Pledge is linked to.
+          type: integer
+          example: 256
+          minimum: 1
+        frequency:
+          description: The Pledge's frequency.
+          type: string
+          example: monthly
+          enum:
+            - weekly
+            - fortnightly
+            - twice-monthly
+            - monthly
+            - quarterly
+            - yearly
+        starts_at:
+          description: The date the Pledge begins.
+          type: string
+          format: date
+          example: '2023-01-20'
+        ends_at:
+          description: The date the Pledge ends.
+          type:
+            - string
+            - 'null'
+          format: date
+          example: '2023-01-20'
+        amount_recurring:
+          description: >-
+            The Pledge's recurring amount in the smallest monetary unit of your
+            account's currency.
+          type:
+            - integer
+            - 'null'
+          example: 5025
+          minimum: 1
+        amount_oneoff:
+          description: >-
+            The Pledge's one off amount in the smallest monetary unit of your
+            account's currency.
+          type:
+            - integer
+            - 'null'
+          example: 5025
+          minimum: 1
+        cancelled_at:
+          description: Date and time the Pledge was cancelled.
+          type:
+            - string
+            - 'null'
+          format: date-time
+          example: '2014-04-25T10:10:32Z'
+        cancelled_by:
+          description: The user who cancelled the Pledge.
+          type:
+            - string
+            - 'null'
+          example: neil
+        cancelled_source:
+          description: Where the Pledge was cancelled.
+          type:
+            - string
+            - 'null'
+          example: neil
+        status:
+          description: The current status of the Pledge.
+          type: string
+          example: active
+          enum:
+            - active
+            - cancelled
+            - expired
+            - future
+            - incomplete
+        created_at:
+          description: Date and time the Pledge's record was created.
+          type:
+            - string
+            - 'null'
+          format: date-time
+          example: '2014-04-25T10:10:32Z'
+        created_by:
+          description: The user who created the Pledge's record.
+          type:
+            - string
+            - 'null'
+          example: neil
+        created_source:
+          description: The source of the Pledge.
+          type:
+            - string
+            - 'null'
+          example: donate
+        modified_at:
+          description: Date and time the Pledge's record was last modified.
+          type:
+            - string
+            - 'null'
+          format: date-time
+          example: '2023-09-19T14:52:40Z'
+        modified_by:
+          description: The user who last modified the Pledge's record.
+          type:
+            - string
+            - 'null'
+          example: anthony
+      additionalProperties: false
+      required:
+        - id
+        - giver_id
+        - fund_id
+        - frequency
+        - starts_at
+        - ends_at
+        - amount_recurring
+        - amount_oneoff
+        - cancelled_at
+        - cancelled_by
+        - cancelled_source
+        - status
+        - created_at
+        - created_by
+        - created_source
+        - modified_at
+        - modified_by
+    Tag:
+      description: Tag data as found in several modules.
+      type: object
+      properties:
+        id:
+          description: The Tag's ID.
+          type: integer
+          example: 1
+          minimum: 1
+        name:
+          description: The Tag's name.
+          type: string
+          example: Serving
+        category_id:
+          description: The Tag's Category ID.
+          type:
+            - integer
+            - 'null'
+          example: 12
+          minimum: 1
+        description:
+          description: The description of the Tag.
+          type: string
+          example: A individual who is serving for the church.
+        colour:
+          description: The name of the colour of the Tag.
+          type: string
+          example: blue
+          enum:
+            - blue
+            - brown
+            - green
+            - grey
+            - orange
+            - pink
+            - purple
+            - red
+        is_smart:
+          description: Whether the Tag is smart or fixed.
+          type: boolean
+          example: true
+        visible_to:
+          description: >-
+            Who the resource is visible to, or null if there are no
+            restrictions.
+          type:
+            - object
+            - 'null'
+          additionalProperties: false
+          properties:
+            just_me:
+              description: Whether the resource is visible to just the current user or not.
+              type: boolean
+              example: false
+            user_group_ids:
+              description: List of user group IDs the resource is visible to.
+              type: array
+              items:
+                type: integer
+                minimum: 1
+              example:
+                - 1
+                - 5
+                - 10
+          required:
+            - just_me
+            - user_group_ids
+        pinned_icon:
+          description: >-
+            This Tag's pinned icon. Pinned tags give you a quick way to see your
+            most important tags at a glance; they're displayed at the top of the
+            page when viewing a person's profile.
+          type:
+            - string
+            - 'null'
+          example: tick
+          enum:
+            - tick
+            - cross
+            - archive
+            - warning
+            - flag
+            - magic
+            - star
+            - profile
+            - user
+            - couple
+            - group
+            - pledge
+            - education
+            - job
+            - gift
+            - role
+            - duration
+            - smiley-happy
+            - smiley-neutral
+            - smiley-sad
+        created_at:
+          description: Date and time the Tag was created.
+          type:
+            - string
+            - 'null'
+          format: date-time
+          example: '2014-04-25T10:10:32Z'
+        created_by:
+          description: The user who created the Tag.
+          type:
+            - string
+            - 'null'
+          example: neil
+        modified_at:
+          description: Date and time the Tag was last modified.
+          type:
+            - string
+            - 'null'
+          format: date-time
+          example: '2023-09-19T14:52:40Z'
+        modified_by:
+          description: The user who last modified the Tag.
+          type:
+            - string
+            - 'null'
+          example: anthony
+      additionalProperties: false
+      required:
+        - id
+        - name
+        - category_id
+        - description
+        - colour
+        - is_smart
+        - visible_to
+        - pinned_icon
+        - created_at
+        - created_by
+        - modified_at
+        - modified_by
+    TagAdd:
+      description: Create a Tag.
+      type: object
+      properties:
+        name:
+          description: The Tag's name.
+          type: string
+          example: Serving
+          maxLength: 50
+          minLength: 1
+          pattern: ^[a-zA-Z]+$
+        category_id:
+          description: >-
+            The Tag's Category ID. This sets the default colour of the Tag to
+            the Category's colour.
+          type: integer
+          examples:
+            - 1
+            - 7
+            - 12
+          minimum: 1
+        description:
+          description: The description of the Tag.
+          type: string
+          example: The Kings Hope staff team (paid and unpaid).
+          maxLength: 65535
+          minLength: 0
+        colour:
+          description: >-
+            The name of the colour of the Tag. If not specified, the Category
+            colour will be used where applicable, falling back to 'blue'.
+          type: string
+          example: blue
+          default: blue
+          enum:
+            - blue
+            - red
+            - orange
+            - green
+            - purple
+            - pink
+            - brown
+            - grey
+        is_smart:
+          description: Whether the Tag is smart or fixed.
+          type: boolean
+          example: true
+        visible_to:
+          oneOf:
+            - type: object
+              description: >-
+                Who the resource is visible to. Do not include in the request if
+                there are no restrictions. If included in the request, only one
+                of `just_me` or `user_group_ids` can be set.
+              properties:
+                just_me:
+                  description: The resource should only be visible to the current user
+                  type: boolean
+                  example: true
+                  enum:
+                    - true
+              additionalProperties: false
+            - type: object
+              description: >-
+                Who the resource is visible to, or null if there are no
+                restrictions.
+              properties:
+                user_group_ids:
+                  description: >-
+                    List of user group IDs the resource is visible to. You are
+                    only able to add user group IDs for user groups you have
+                    access to.
+                  type: array
+                  items:
+                    type: integer
+                    minimum: 1
+                  example:
+                    - 13
+                    - 31
+              additionalProperties: false
+        pinned_icon:
+          description: >-
+            Pin this Tag by specifying an icon. Pinned tags give you a quick way
+            to see your most important tags at a glance; they're displayed at
+            the top of the page when viewing a person's profile.
+          type: string
+          example: tick
+          enum:
+            - tick
+            - cross
+            - archive
+            - warning
+            - flag
+            - magic
+            - star
+            - profile
+            - user
+            - couple
+            - group
+            - pledge
+            - education
+            - job
+            - gift
+            - role
+            - duration
+            - smiley-happy
+            - smiley-neutral
+            - smiley-sad
+      additionalProperties: false
+      required:
+        - name
+        - is_smart
+    TagCategory:
+      description: Tag category data as found in several modules
+      type: object
+      properties:
+        id:
+          description: The tag category's ID.
+          type: integer
+          example: 1
+          minimum: 1
+        name:
+          description: The tag category's name
+          type: string
+          example: Admin
+        color:
+          description: The name of the colour of the tag category
+          type: string
+          example: blue
+          enum:
+            - blue
+            - red
+            - orange
+            - green
+            - purple
+            - pink
+            - brown
+            - grey
+      additionalProperties: false
+      required:
+        - id
+        - name
+        - color
+    TagEdit:
+      description: Update a Tag.
+      type: object
+      properties:
+        name:
+          description: The Tag's name.
+          type: string
+          example: Serving
+          maxLength: 50
+          minLength: 1
+          pattern: ^[a-zA-Z]+$
+        category_id:
+          description: The Tag's Category ID.
+          type:
+            - integer
+            - 'null'
+          examples:
+            - 1
+            - 7
+            - 12
+          minimum: 1
+        description:
+          description: The description of the Tag.
+          type: string
+          example: The Kings Hope staff team (paid and unpaid).
+          maxLength: 65535
+          minLength: 0
+        colour:
+          description: The name of the colour of the Tag.
+          type: string
+          example: blue
+          enum:
+            - blue
+            - red
+            - orange
+            - green
+            - purple
+            - pink
+            - brown
+            - grey
+        visible_to:
+          description: >-
+            Who the resource is visible to. Null if there are no restrictions.
+            If `just_me` is true, `user_group_ids` must be empty or not set. If
+            `just_me` is false, `user_group_ids` must contain at least one User
+            Group ID.
+          type:
+            - object
+            - 'null'
+          oneOf:
+            - type: object
+              title: Visible to User Groups
+              properties:
+                just_me:
+                  description: The resource should only be visible to the current user
+                  type: boolean
+                  example: false
+                  enum:
+                    - false
+                user_group_ids:
+                  description: List of user group IDs the resource is visible to.
+                  type: array
+                  items:
+                    type: integer
+                    minimum: 1
+                  example:
+                    - 13
+                    - 31
+              required:
+                - user_group_ids
+              additionalProperties: false
+            - type: object
+              title: Visible to just me
+              properties:
+                just_me:
+                  description: The resource should only be visible to the current user
+                  type: boolean
+                  example: true
+                  enum:
+                    - true
+                user_group_ids:
+                  description: List of user group IDs the resource is visible to.
+                  type: array
+                  items:
+                    type: integer
+                  example: []
+                  maxItems: 0
+              required:
+                - just_me
+              additionalProperties: false
+        pinned_icon:
+          description: >-
+            Pin this Tag by specifying an icon. This will be displayed within
+            the application.
+          type:
+            - string
+            - 'null'
+          example: tick
+          enum:
+            - tick
+            - cross
+            - archive
+            - warning
+            - flag
+            - magic
+            - star
+            - profile
+            - user
+            - couple
+            - group
+            - pledge
+            - education
+            - job
+            - gift
+            - role
+            - duration
+            - smiley-happy
+            - smiley-neutral
+            - smiley-sad
+      additionalProperties: false
+      required:
+        - name
+        - category_id
+        - description
+        - colour
+        - visible_to
+        - pinned_icon
+    TagResource:
+      description: A Tag Resource represents a Person who is part of a Tag.
+      type: object
+      properties:
+        person:
+          description: The Person to link to the Tag.
+          type: object
+          additionalProperties: false
+          properties:
+            type:
+              description: >-
+                The Person's type, indicating whether they are a Child, Contact,
+                Customer or Giver.
+              type: string
+              example: giving_giver
+              enum:
+                - giving_giver
+            id:
+              description: The Person's ID.
+              type: integer
+              example: 12
+              minimum: 1
+          required:
+            - type
+            - id
+        giver_id:
+          description: >-
+            This is no longer recommended - please use `person` to get the
+            Person's details. The Giver's ID.
+          type: integer
+          example: 12
+          deprecated: true
+          minimum: 1
+        tag_id:
+          description: The Tag's ID.
+          type: integer
+          example: 5
+          minimum: 1
+      additionalProperties: false
+      required:
+        - person
+        - giver_id
+        - tag_id
+    TagResourceAdd:
+      description: Create a Tag Resource, linking a Person to a Tag.
+      type: object
+      properties:
+        person:
+          description: The Person to link to the Tag.
+          type: object
+          additionalProperties: false
+          properties:
+            type:
+              description: >-
+                The Person's type, indicating whether they are a Child, Contact,
+                Customer or Giver.
+              type: string
+              example: giving_giver
+              enum:
+                - giving_giver
+            id:
+              description: The Person's ID.
+              type: integer
+              example: 12
+              minimum: 1
+          required:
+            - type
+            - id
+        tag_id:
+          description: The Tag's ID.
+          type: integer
+          example: 5
+          minimum: 1
+      additionalProperties: false
+      required:
+        - person
+        - tag_id
+  responses:
+    '400':
+      description: Invalid request.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: object
+                additionalProperties: false
+                properties:
+                  status:
+                    type: integer
+                    enum:
+                      - 400
+                  errors:
+                    type: object
+                    example:
+                      first_name: This field is required.
+                      ticket_id: This ticket_id is invalid for this event.
+                    additionalProperties:
+                      oneOf:
+                        - type: string
+                        - type: object
+                          additionalProperties:
+                            type: string
+                  message:
+                    type: string
+                    example: There were validation errors with the data you provided.
+                required:
+                  - status
+                  - errors
+                  - message
+            additionalProperties: false
+            required:
+              - error
+    '401':
+      description: >-
+        Unauthorized - the credentials provided are incorrect or no longer
+        active.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: object
+                additionalProperties: false
+                properties:
+                  status:
+                    type: integer
+                    enum:
+                      - 401
+                  message:
+                    type: string
+                    example: Unauthorized
+                required:
+                  - status
+                  - message
+            additionalProperties: false
+            required:
+              - error
+    '403':
+      description: Forbidden - you do not have permission to access this resource.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: object
+                additionalProperties: false
+                properties:
+                  status:
+                    type: integer
+                    enum:
+                      - 403
+                  message:
+                    type: string
+                    example: You do not have sufficient permissions for this action
+                required:
+                  - status
+                  - message
+            additionalProperties: false
+            required:
+              - error
+    '404':
+      description: Not Found - the resource or API endpoint cannot be found.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: object
+                additionalProperties: false
+                properties:
+                  status:
+                    type: integer
+                    enum:
+                      - 404
+                  message:
+                    type: string
+                    example: Not Found
+                required:
+                  - status
+                  - message
+            additionalProperties: false
+            required:
+              - error
+    '409':
+      description: Conflict.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: object
+                additionalProperties: false
+                properties:
+                  status:
+                    type: integer
+                    enum:
+                      - 409
+                  errors:
+                    type: object
+                    example:
+                      name: >-
+                        A category with this name already exists. Please choose
+                        a different name.
+                    additionalProperties:
+                      type: string
+                  message:
+                    type: string
+                    example: >-
+                      A conflict exists that prevents your request from being
+                      completed.
+                required:
+                  - status
+                  - message
+            additionalProperties: false
+            required:
+              - error
+    '429':
+      description: Too Many Requests - the rate limit has been exceeded.
+      headers:
+        Retry-After:
+          description: Number of seconds until the rate limiting period expires
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: object
+                additionalProperties: false
+                properties:
+                  status:
+                    type: integer
+                    enum:
+                      - 429
+                  message:
+                    type: string
+                    example: The rate limit has been exceeded.
+                    enum:
+                      - The rate limit has been exceeded.
+                required:
+                  - status
+                  - message
+            additionalProperties: false
+            required:
+              - error
+  securitySchemes:
+    oauth_token:
+      type: oauth2
+      description: Access APIv2 using an API enabled user, or via an OAuth App.
+      flows:
+        clientCredentials:
+          tokenUrl: https://login.churchsuite.com/oauth2/token
+          scopes:
+            full_access: Full access on behalf of the user
+            giving.read: Read access to the Giving module
+            giving.write: Write access to the Giving module
+        authorizationCode:
+          authorizationUrl: https://login.churchsuite.com/oauth2/authorize
+          tokenUrl: https://login.churchsuite.com/oauth2/token
+          scopes:
+            full_access: Full access on behalf of the user
+            giving.read: Read access to the Giving module
+            giving.write: Write access to the Giving module
+tags:
+  - name: Giving Module
+    description: >-
+      This module is designed to help manage the donations you receive and the
+      givers who gave them. The Giving module also includes support for claiming
+      Gift Aid (for UK customers only) and Tax Deductible donations (North
+      America).
+    externalDocs:
+      description: >-
+        Explore our large database of online support articles for step-by-step
+        help.
+      url: https://support.churchsuite.com/article/455-getting-started-with-the-giving-module
+  - name: Claims
+    parent: Giving Module
+    description: Manage your Gift Aid claims (UK only).
+    externalDocs:
+      description: >-
+        Explore our large database of online support articles for step-by-step
+        help.
+      url: https://support.churchsuite.com/article/119-reclaiming-gift-aid
+  - name: Custom Fields GI
+    summary: Custom Fields
+    parent: Giving Module
+    description: >-
+      Custom Fields collect and manage information that doesn't fit in the
+      module's standard or optional fields.
+    externalDocs:
+      description: >-
+        Explore our large database of online support articles for step-by-step
+        help.
+      url: https://support.churchsuite.com/article/39-creating-custom-fields
+  - name: Declarations
+    parent: Giving Module
+    description: Manage the Gift Aid declarations made by your givers (UK only).
+    externalDocs:
+      description: >-
+        Explore our large database of online support articles for step-by-step
+        help.
+      url: https://support.churchsuite.com/article/118-managing-your-gift-aid-declarations
+  - name: Donations
+    parent: Giving Module
+    description: Manage the donations you receive.
+    externalDocs:
+      description: >-
+        Explore our large database of online support articles for step-by-step
+        help.
+      url: https://support.churchsuite.com/article/51-adding-or-importing-donations
+  - name: Flows GI
+    summary: Flows
+    parent: Giving Module
+    description: >-
+      Flows are an incredibly versatile tool designed to streamline repetitive
+      people-processing tasks by breaking them down into manageable stages. For
+      each stage, you define the choice of preset actions to be processed as
+      each person becomes due.
+    externalDocs:
+      description: >-
+        Explore our large database of online support articles for step-by-step
+        help.
+      url: https://support.churchsuite.com/article/154-flows
+  - name: Funds
+    parent: Giving Module
+    description: >-
+      Set up restricted, designated or general-purpose funds to categorise
+      donations.
+    externalDocs:
+      description: >-
+        Explore our large database of online support articles for step-by-step
+        help.
+      url: https://support.churchsuite.com/article/115-setting-up-and-managing-funds-in-giving
+  - name: Givers
+    parent: Giving Module
+    description: Add givers and manage their giving profile.
+    externalDocs:
+      description: >-
+        Explore our large database of online support articles for step-by-step
+        help.
+      url: https://support.churchsuite.com/article/120-adding-a-new-giver
+  - name: Pledges
+    parent: Giving Module
+    description: >-
+      Pledges are extremely helpful for planning, projecting future income and
+      producing budgets.
+    externalDocs:
+      description: >-
+        Explore our large database of online support articles for step-by-step
+        help.
+      url: https://support.churchsuite.com/article/225-managing-pledges
+  - name: Tags GI
+    summary: Tags
+    parent: Giving Module
+    description: Tags allow you to flexibly categorise or group people together.
+    externalDocs:
+      description: >-
+        Explore our large database of online support articles for step-by-step
+        help.
+      url: https://support.churchsuite.com/article/33-communicate-with-groups-of-contacts-in-a-fixed-tag

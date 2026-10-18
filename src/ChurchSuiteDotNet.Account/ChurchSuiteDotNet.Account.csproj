@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>ChurchSuite v2 API client for the Account module (generated with Kiota).</Description>
+    <NoWarn>$(NoWarn);CS1591;CS8618</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ChurchSuiteDotNet\ChurchSuiteDotNet.csproj" />
+  </ItemGroup>
+
+</Project>

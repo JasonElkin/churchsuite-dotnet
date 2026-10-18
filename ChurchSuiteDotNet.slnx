@@ -1,0 +1,18 @@
+<Solution>
+  <Folder Name="/x/">
+    <Project Path="src/ChurchSuiteDotNet.Account/ChurchSuiteDotNet.Account.csproj" />
+    <Project Path="src/ChurchSuiteDotNet.Addressbook/ChurchSuiteDotNet.Addressbook.csproj" />
+    <Project Path="src/ChurchSuiteDotNet.Attendance/ChurchSuiteDotNet.Attendance.csproj" />
+    <Project Path="src/ChurchSuiteDotNet.Bookings/ChurchSuiteDotNet.Bookings.csproj" />
+    <Project Path="src/ChurchSuiteDotNet.Calendar/ChurchSuiteDotNet.Calendar.csproj" />
+    <Project Path="src/ChurchSuiteDotNet.Children/ChurchSuiteDotNet.Children.csproj" />
+    <Project Path="src/ChurchSuiteDotNet.Extensions.DependencyInjection/ChurchSuiteDotNet.Extensions.DependencyInjection.csproj" />
+    <Project Path="src/ChurchSuiteDotNet.Giving/ChurchSuiteDotNet.Giving.csproj" />
+    <Project Path="src/ChurchSuiteDotNet.Network/ChurchSuiteDotNet.Network.csproj" />
+    <Project Path="src/ChurchSuiteDotNet.Planning/ChurchSuiteDotNet.Planning.csproj" />
+    <Project Path="src/ChurchSuiteDotNet.Rotas/ChurchSuiteDotNet.Rotas.csproj" />
+    <Project Path="src/ChurchSuiteDotNet.SmallGroups/ChurchSuiteDotNet.SmallGroups.csproj" />
+    <Project Path="src/ChurchSuiteDotNet/ChurchSuiteDotNet.csproj" />
+    <Project Path="tests/ChurchSuiteDotNet.Tests/ChurchSuiteDotNet.Tests.csproj" />
+  </Folder>
+</Solution>
