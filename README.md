@@ -27,8 +27,18 @@ var calendar = factory.CreateCalendarClient();
 
 ## Usage with dependency injection (ASP.NET Core, worker services, etc.)
 
+```json
+// appsettings.json
+{
+  "ChurchSuite": {
+    "ClientId": "...",
+    "ClientSecret": "..."
+  }
+}
+```
+
 ```csharp
-// appsettings.json: { "ChurchSuite": { "ClientId": "...", "ClientSecret": "..." } }
+// Program.cs or Startup.cs
 services.AddChurchSuite(configuration.GetSection("ChurchSuite"));
 services.AddChurchSuiteClient(adapter => new CalendarClient(adapter));
 ```
@@ -37,10 +47,64 @@ services.AddChurchSuiteClient(adapter => new CalendarClient(adapter));
 
 ## Development
 
-- **Specs are committed.** `./scripts/update-specs.ps1 [-Tag 2.112.3]` pins `specs/` to a tagged release of the upstream [churchsuite-api](https://github.com/ChurchSuite/churchsuite-api) (the tag is recorded in `specs/VERSION`). `./scripts/generate-clients.ps1 [-Modules Calendar,Giving]` regenerates the clients from `specs/` (Kiota is pinned in `.config/dotnet-tools.json`), works offline, and discovers modules from `specs/*.yaml`. A new spec gets its project scaffolded and added to the solution automatically. Changes that only touch `kiota-lock.json` (e.g. an `info.version` bump) are discarded.
-- **Update clients** runs weekly: it pins the latest upstream tag and regenerates the clients. If any module's generated code changed, it opens a PR (label `api-update`) with the upstream CHANGELOG entries, a table classifying each module's change as breaking, additive or docs-only (SDK package validation against the last release), and a `release-plan` block with one suggested `bump:`. Change or delete that line before merging; re-runs rewrite the PR body, so do it just before merging. Add a `PR_TOKEN` secret (preferably a GitHub App token) so CI runs on that PR.
-- **All packages share one version** (lockstep), taken from `v<version>` tags via [MinVer](https://github.com/adamralph/minver), e.g. `v0.4.0`. Every release publishes every package, and modules depend on the core package of the same release. The first release is `0.1.0`. While at 0.x a breaking change is suggested as a minor bump; run a manual `major` release to move to 1.0.0.
-- **Merging the PR publishes.** The **Release** workflow reads the bump from the `release-plan` block, tests, tags, packs every package, pushes them to NuGet (core first) using [trusted publishing](https://learn.microsoft.com/nuget/nuget-org/trusted-publishing) (no API key; set the `NUGET_USER` secret to your nuget.org profile name and add a policy for this repo and `release.yml`), and creates one GitHub release with all the packages attached. The tag is pushed only after NuGet accepts every package, so a failed run can be re-run.
-- **Manual releases** (core/DI changes, one-offs): run **Release** from the Actions tab with a `bump`, and optionally `dry_run` to pack without publishing. It does nothing if nothing has changed since the last stable release.
-- **Pre-releases**: run **Release** manually with `prerelease` set to `alpha`, `beta` or `rc`. The version is the bump of the last stable release plus a numbered suffix, e.g. `v0.3.0-beta.1`, then `v0.3.0-beta.2`, `v0.3.0-rc.1`; channels only move forward. They're marked as pre-releases on GitHub and NuGet (install with `--prerelease` or the exact version). A later stable release of any bump that isn't larger publishes that same version (`v0.3.0`), and its notes cover everything since the last stable release. Merged update PRs always publish a stable release, and change suggestions compare against the last stable release.
-- Preview the next release and its notes locally with `./scripts/tag-release.ps1 [-Bump minor] [-Prerelease beta]`.
+### Regenerating the clients
+
+The upstream [OpenAPI specs](https://github.com/ChurchSuite/churchsuite-api) are committed in `specs/`, pinned to a tagged upstream release (recorded in `specs/VERSION`).
+
+```powershell
+./scripts/update-specs.ps1 [-Tag 2.112.3]          # pin specs/ to an upstream tag (default: latest)
+./scripts/generate-clients.ps1 [-Modules Calendar]  # regenerate clients from specs/ (works offline)
+```
+
+- Modules are discovered from `specs/*.yaml`. A new spec gets its project scaffolded and added to the solution.
+- Kiota is pinned in `.config/dotnet-tools.json`.
+- Changes that only touch `kiota-lock.json` (e.g. an upstream `info.version` bump) are discarded.
+- CI regenerates the clients and fails if `Generated/` differs, so don't edit generated code by hand.
+
+### Versioning
+
+- All packages share **one version** (lockstep), taken from git tags by [MinVer](https://github.com/adamralph/minver): `v0.4.0` for a release, `v0.4.0-beta.1` for a pre-release.
+- Every release publishes every package. Modules depend on the core package of the same release.
+- The first release is `0.1.0`. While at 0.x, breaking changes are suggested as a minor bump; run a manual `major` release to move to 1.0.0.
+
+### Releasing an API update
+
+1. **Update clients** runs weekly (or manually from the Actions tab). It pins the latest upstream tag, regenerates, and, if any module's generated code changed, opens a PR labelled `api-update` containing:
+   - the upstream CHANGELOG entries;
+   - each module's change, classified as breaking, additive or docs-only (SDK package validation against the last stable release);
+   - a `release-plan` block with one suggested bump, e.g. `bump: minor`.
+2. **Review the PR.** Change the `bump:` line if you disagree, or delete it to merge without publishing. Re-runs rewrite the PR body, so edit it just before merging.
+3. **Merge.** The **Release** workflow tests, tags, packs every package, pushes them to NuGet (core first) and creates one GitHub release with the packages attached. The tag is only pushed once NuGet has accepted every package, so a failed run can simply be re-run.
+
+Merged update PRs always publish a stable release.
+
+### Manual releases and pre-releases
+
+Run **Release** from the Actions tab for core/DI changes, one-off releases or pre-releases:
+
+| Input | Values | Effect |
+|---|---|---|
+| `bump` | `minor` (default), `patch`, `major` | Which part of the last stable version to increment. |
+| `prerelease` | `none` (default), `alpha`, `beta`, `rc` | Publish a pre-release instead, e.g. `v0.3.0-beta.1`. |
+| `dry_run` | `false` (default), `true` | Plan and pack only; publish nothing. |
+
+It does nothing if nothing has changed since the last stable release.
+
+Pre-releases:
+
+- Are numbered per version and channel: `v0.3.0-beta.1`, `v0.3.0-beta.2`, `v0.3.0-rc.1`. Channels only move forward (alpha → beta → rc).
+- Are marked as pre-releases on GitHub and NuGet; install with `--prerelease` or the exact version.
+- Are followed by the stable release of the same version: once `v0.3.0-beta.2` is out, a `minor` or `patch` release publishes `v0.3.0`, with notes covering everything since the last stable release.
+
+Preview the next release and its notes locally:
+
+```powershell
+./scripts/tag-release.ps1 [-Bump minor] [-Prerelease beta]
+```
+
+### One-time setup
+
+| Secret | Purpose |
+|---|---|
+| `NUGET_USER` | Your nuget.org profile name, for [trusted publishing](https://learn.microsoft.com/nuget/nuget-org/trusted-publishing) (no API key). Also add a trusted publishing policy on nuget.org for this repo and `release.yml`. |
+| `PR_TOKEN` | A fine-grained PAT (Contents and Pull requests: read and write) or GitHub App token, so CI runs on the update PRs. Without it the PRs are still opened, but CI doesn't run on them. |
