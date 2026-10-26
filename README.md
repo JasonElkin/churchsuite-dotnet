@@ -104,6 +104,8 @@ public class EventsService(CalendarClient calendar)
 
 Requests go through `IHttpClientFactory` with standard resilience (retries, timeouts) applied. `AddChurchSuite` returns the `IHttpClientBuilder`, so you can add your own handlers or tune the resilience settings.
 
+The underlying Kiota `IRequestAdapter` is registered as a keyed service (`ServiceCollectionExtensions.RequestAdapterServiceKey`), so ChurchSuiteDotNet can sit alongside other Kiota-based SDKs, such as Microsoft Graph, in the same container.
+
 ## Configuration
 
 | Option | Default | Description |
@@ -113,6 +115,8 @@ Requests go through `IHttpClientFactory` with standard resilience (retries, time
 | `Scope` | `full_access` | Space-separated [OAuth scopes](https://developer.churchsuite.com/auth) to request, e.g. `calendar.read smallgroups.read`. |
 | `BaseUrl` | `https://api.churchsuite.com/v2` | The API's base address. |
 | `TokenUrl` | `https://login.churchsuite.com/oauth2/token` | The OAuth token endpoint. CharitySuite accounts use `https://login.charitysuite.com/oauth2/token`. |
+
+Options are validated up front: `ChurchSuiteClientFactory` throws an `ArgumentException` listing every invalid setting, and with dependency injection the host fails to start with an `OptionsValidationException` (or, without a host, the first client you resolve throws it).
 
 ## Versioning
 

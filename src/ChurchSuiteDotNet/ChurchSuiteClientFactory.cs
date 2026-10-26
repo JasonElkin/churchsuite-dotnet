@@ -34,6 +34,7 @@ public sealed class ChurchSuiteClientFactory : IDisposable
     public ChurchSuiteClientFactory(ChurchSuiteOptions options, HttpClient? httpClient)
     {
         ArgumentNullException.ThrowIfNull(options);
+        options.Validate(nameof(options));
         _options = options;
         _httpClient = httpClient ?? KiotaClientFactory.Create();
         _ownedTokenProvider = new ChurchSuiteTokenProvider(options, _httpClient);
@@ -49,6 +50,7 @@ public sealed class ChurchSuiteClientFactory : IDisposable
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(tokenProvider);
         ArgumentNullException.ThrowIfNull(httpClient);
+        options.Validate(nameof(options));
         _options = options;
         _httpClient = httpClient;
         _authenticationProvider = new BaseBearerTokenAuthenticationProvider(tokenProvider);

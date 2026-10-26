@@ -20,6 +20,12 @@ public static class ServiceCollectionExtensions
     /// <summary>The default configuration section, <c>ChurchSuite</c>.</summary>
     public const string DefaultConfigurationSection = "ChurchSuite";
 
+    /// <summary>
+    /// Key of the ChurchSuite <see cref="IRequestAdapter"/>. It is registered as a keyed service so it doesn't
+    /// clash with other Kiota-based SDKs in the same container.
+    /// </summary>
+    public const string RequestAdapterServiceKey = "ChurchSuite";
+
     /// <summary>Registers ChurchSuite services, configured by code.</summary>
     /// <returns>The builder for the API <see cref="HttpClient"/>, for further customisation.</returns>
     public static IHttpClientBuilder AddChurchSuite(this IServiceCollection services, Action<ChurchSuiteOptions> configure)
@@ -46,18 +52,21 @@ public static class ServiceCollectionExtensions
         where T : BaseRequestBuilder
     {
         ArgumentNullException.ThrowIfNull(clientFactory);
-        return services.AddTransient(sp => clientFactory(sp.GetRequiredService<IRequestAdapter>()));
+        return services.AddTransient(sp => clientFactory(sp.GetRequiredKeyedService<IRequestAdapter>(RequestAdapterServiceKey)));
     }
 
     private static IHttpClientBuilder AddChurchSuiteCore(this IServiceCollection services)
     {
+        // Validated when the host starts, or on first use outside a host.
+        services.AddOptions<ChurchSuiteOptions>().ValidateDataAnnotations().ValidateOnStart();
+
         services.AddHttpClient(AuthHttpClientName).AddStandardResilienceHandler();
 
         services.AddSingleton(sp => new ChurchSuiteTokenProvider(
             sp.GetRequiredService<IOptions<ChurchSuiteOptions>>().Value,
             () => sp.GetRequiredService<IHttpClientFactory>().CreateClient(AuthHttpClientName)));
 
-        services.AddTransient<IRequestAdapter>(sp =>
+        services.AddKeyedTransient<IRequestAdapter>(RequestAdapterServiceKey, (sp, _) =>
         {
             var options = sp.GetRequiredService<IOptions<ChurchSuiteOptions>>().Value;
             var http = sp.GetRequiredService<IHttpClientFactory>().CreateClient(ApiHttpClientName);

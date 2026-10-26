@@ -37,6 +37,7 @@ public sealed class ChurchSuiteTokenProvider : IAccessTokenProvider, IDisposable
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(httpClientAccessor);
+        options.Validate(nameof(options));
         _options = options;
         _httpClientAccessor = httpClientAccessor;
         _timeProvider = timeProvider ?? TimeProvider.System;
