@@ -54,6 +54,27 @@ public class TokenProviderTests
     }
 
     [Test]
+    public async Task SendsCredentialsWithBasicAuth()
+    {
+        HttpRequestMessage? sent = null;
+        string? body = null;
+        var handler = new StubHandler(request =>
+        {
+            sent = request;
+            body = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+            return Token();
+        });
+        using var provider = new ChurchSuiteTokenProvider(Options, new HttpClient(handler));
+
+        await provider.GetAuthorizationTokenAsync(Api);
+
+        Assert.That(sent!.RequestUri, Is.EqualTo(Options.TokenUrl));
+        Assert.That(sent.Headers.Authorization?.Scheme, Is.EqualTo("Basic"));
+        Assert.That(sent.Headers.Authorization?.Parameter, Is.EqualTo(Convert.ToBase64String(Encoding.UTF8.GetBytes("id:secret"))));
+        Assert.That(body, Is.EqualTo("grant_type=client_credentials&scope=full_access"));
+    }
+
+    [Test]
     public async Task ConcurrentRequestsRefreshOnce()
     {
         var handler = new StubHandler(_ => Token());

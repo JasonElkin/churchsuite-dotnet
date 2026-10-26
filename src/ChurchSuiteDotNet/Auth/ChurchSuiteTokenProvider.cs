@@ -1,4 +1,6 @@
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text;
 using Microsoft.Kiota.Abstractions.Authentication;
 
 namespace ChurchSuiteDotNet.Auth;
@@ -89,15 +91,19 @@ public sealed class ChurchSuiteTokenProvider : IAccessTokenProvider, IDisposable
 
     private async Task<string> RefreshAsync(CancellationToken cancellationToken)
     {
-        using var content = new FormUrlEncodedContent(new Dictionary<string, string>
+        // ChurchSuite expects the client id and secret as HTTP Basic credentials, not in the form body.
+        var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{_options.ClientId}:{_options.ClientSecret}"));
+        using var request = new HttpRequestMessage(HttpMethod.Post, _options.TokenUrl)
         {
-            ["client_id"] = _options.ClientId,
-            ["client_secret"] = _options.ClientSecret,
-            ["scope"] = _options.Scope,
-            ["grant_type"] = "client_credentials",
-        });
+            Headers = { Authorization = new AuthenticationHeaderValue("Basic", credentials) },
+            Content = new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                ["grant_type"] = "client_credentials",
+                ["scope"] = _options.Scope,
+            }),
+        };
 
-        var response = await _httpClientAccessor().PostAsync(_options.TokenUrl, content, cancellationToken).ConfigureAwait(false);
+        var response = await _httpClientAccessor().SendAsync(request, cancellationToken).ConfigureAwait(false);
         using (response)
         {
             if (!response.IsSuccessStatusCode)
