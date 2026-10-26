@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>ChurchSuite v2 API client for the Planning module (generated with Kiota).</Description>
+    <Description>Community-maintained .NET client for the ChurchSuite Planning API: service plans, templates, songs and arrangements.</Description>
+    <PackageTags>$(PackageTags);planning</PackageTags>
     <NoWarn>$(NoWarn);CS1591;CS8618</NoWarn>
   </PropertyGroup>
 

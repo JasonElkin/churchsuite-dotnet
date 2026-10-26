@@ -1,16 +1,35 @@
 # ChurchSuiteDotNet
 
-A general-purpose .NET client for the [ChurchSuite v2 API](https://github.com/ChurchSuite/churchsuite-api). Each API module is generated with [Kiota](https://learn.microsoft.com/openapi/kiota/) and shipped as its own NuGet package.
+A .NET client for the [ChurchSuite v2 API](https://github.com/ChurchSuite/churchsuite-api).
 
-| Package | Purpose |
-|---|---|
-| `ChurchSuiteDotNet` | Authentication (client credentials), options, `ChurchSuiteClientFactory`. No DI required. |
-| `ChurchSuiteDotNet.Extensions.DependencyInjection` | `IServiceCollection` registration with `IHttpClientFactory` and resilience. |
-| `ChurchSuiteDotNet.{Account, Addressbook, Attendance, Bookings, Calendar, Children, Giving, Network, Planning, Rotas, SmallGroups}` | Generated module clients. |
+- **Strongly typed:** clients for every ChurchSuite API module, generated from ChurchSuite's own OpenAPI specs.
+- **Authentication handled for you:** give it a client ID and secret, and it gets and refreshes the access tokens.
+- **Works anywhere:** use it in a console app or script, or register it with dependency injection in ASP.NET Core and worker services.
+- **Kept up to date:** new API releases are picked up and published automatically.
 
-Targets .NET 10. Each new .NET major release is added as a target going forward; older majors are kept once added.
+> This is a community project. It isn't affiliated with or supported by ChurchSuite.
 
-## Usage without dependency injection
+## Installation
+
+Install the package for each ChurchSuite module you want to use. Each one brings in the core `ChurchSuiteDotNet` package.
+
+```bash
+dotnet add package ChurchSuiteDotNet.Calendar
+```
+
+Available modules: `Account`, `Addressbook`, `Attendance`, `Bookings`, `Calendar`, `Children`, `Giving`, `Network`, `Planning`, `Rotas` and `SmallGroups`, each published as `ChurchSuiteDotNet.<Module>`.
+
+If you use dependency injection, also install:
+
+```bash
+dotnet add package ChurchSuiteDotNet.Extensions.DependencyInjection
+```
+
+Requires .NET 10 or later.
+
+## Getting started
+
+You'll need API credentials (a client ID and secret) from your ChurchSuite account. See [ChurchSuite's API documentation](https://github.com/ChurchSuite/churchsuite-api) for how to create them.
 
 ```csharp
 using ChurchSuiteDotNet;
@@ -18,93 +37,86 @@ using ChurchSuiteDotNet.Calendar;
 
 using var factory = new ChurchSuiteClientFactory(new ChurchSuiteOptions
 {
-    ClientId = "...",
-    ClientSecret = "...",
+    ClientId = "your-client-id",
+    ClientSecret = "your-client-secret",
 });
 
 var calendar = factory.CreateCalendarClient();
+
+var events = await calendar.Calendar.Events.GetAsync(request =>
+{
+    request.QueryParameters.PerPage = 10;
+});
+
+foreach (var e in events?.Data ?? [])
+{
+    Console.WriteLine($"{e.StartsAt:d} {e.Name}");
+}
 ```
 
-## Usage with dependency injection (ASP.NET Core, worker services, etc.)
+Every module works the same way: `factory.CreateAddressbookClient()`, `factory.CreateRotasClient()`, and so on. The client's properties follow the API's URL structure, so `/calendar/events` becomes `calendar.Calendar.Events`.
+
+Create one factory and reuse it, rather than making a new one for each request.
+
+## Using dependency injection
+
+Put your credentials in configuration, for example `appsettings.json` (or, better, [user secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets) or environment variables):
 
 ```json
-// appsettings.json
 {
   "ChurchSuite": {
-    "ClientId": "...",
-    "ClientSecret": "..."
+    "ClientId": "your-client-id",
+    "ClientSecret": "your-client-secret"
   }
 }
 ```
 
+Register ChurchSuite and the module clients you need:
+
 ```csharp
-// Program.cs or Startup.cs
-services.AddChurchSuite(configuration.GetSection("ChurchSuite"));
-services.AddChurchSuiteClient(adapter => new CalendarClient(adapter));
+using ChurchSuiteDotNet.Calendar;
+using ChurchSuiteDotNet.Extensions.DependencyInjection;
+
+builder.Services.AddChurchSuite(builder.Configuration.GetSection("ChurchSuite"));
+builder.Services.AddChurchSuiteClient(adapter => new CalendarClient(adapter));
 ```
 
-`AddChurchSuite` returns the `IHttpClientBuilder` for the API client so you can add handlers or tune resilience. `ChurchSuiteOptions` also exposes `BaseUrl`, `TokenUrl` and `Scope`.
+Then inject the client wherever you need it:
 
-## Development
+```csharp
+using ChurchSuiteDotNet.Calendar;
+using ChurchSuiteDotNet.Calendar.Models;
 
-### Regenerating the clients
-
-The upstream [OpenAPI specs](https://github.com/ChurchSuite/churchsuite-api) are committed in `specs/`, pinned to a tagged upstream release (recorded in `specs/VERSION`).
-
-```powershell
-./scripts/update-specs.ps1 [-Tag 2.112.3]          # pin specs/ to an upstream tag (default: latest)
-./scripts/generate-clients.ps1 [-Modules Calendar]  # regenerate clients from specs/ (works offline)
+public class EventsService(CalendarClient calendar)
+{
+    public async Task<List<Event>> GetEventsAsync()
+    {
+        var response = await calendar.Calendar.Events.GetAsync();
+        return response?.Data ?? [];
+    }
+}
 ```
 
-- Modules are discovered from `specs/*.yaml`. A new spec gets its project scaffolded and added to the solution.
-- Kiota is pinned in `.config/dotnet-tools.json`.
-- Changes that only touch `kiota-lock.json` (e.g. an upstream `info.version` bump) are discarded.
-- CI regenerates the clients and fails if `Generated/` differs, so don't edit generated code by hand.
+Requests go through `IHttpClientFactory` with standard resilience (retries, timeouts) applied. `AddChurchSuite` returns the `IHttpClientBuilder`, so you can add your own handlers or tune the resilience settings.
 
-### Versioning
+## Configuration
 
-- All packages share **one version** (lockstep), taken from git tags by [MinVer](https://github.com/adamralph/minver): `v0.4.0` for a release, `v0.4.0-beta.1` for a pre-release.
-- Every release publishes every package. Modules depend on the core package of the same release.
-- The first release is `0.1.0`. While at 0.x, breaking changes are suggested as a minor bump; run a manual `major` release to move to 1.0.0.
-
-### Releasing an API update
-
-1. **Update clients** runs weekly (or manually from the Actions tab). It pins the latest upstream tag, regenerates, and, if any module's generated code changed, opens a PR labelled `api-update` containing:
-   - the upstream CHANGELOG entries;
-   - each module's change, classified as breaking, additive or docs-only (SDK package validation against the last stable release);
-   - a `release-plan` block with one suggested bump, e.g. `bump: minor`.
-2. **Review the PR.** Change the `bump:` line if you disagree, or delete it to merge without publishing. Re-runs rewrite the PR body, so edit it just before merging.
-3. **Merge.** The **Release** workflow tests, tags, packs every package, pushes them to NuGet (core first) and creates one GitHub release with the packages attached. The tag is only pushed once NuGet has accepted every package, so a failed run can simply be re-run.
-
-Merged update PRs always publish a stable release.
-
-### Manual releases and pre-releases
-
-Run **Release** from the Actions tab for core/DI changes, one-off releases or pre-releases:
-
-| Input | Values | Effect |
+| Option | Default | Description |
 |---|---|---|
-| `bump` | `minor` (default), `patch`, `major` | Which part of the last stable version to increment. |
-| `prerelease` | `none` (default), `alpha`, `beta`, `rc` | Publish a pre-release instead, e.g. `v0.3.0-beta.1`. |
-| `dry_run` | `false` (default), `true` | Plan and pack only; publish nothing. |
+| `ClientId` | | Your OAuth client ID. Required. |
+| `ClientSecret` | | Your OAuth client secret. Required. |
+| `Scope` | `full_access` | The OAuth scope to request. |
+| `BaseUrl` | `https://api.churchsuite.com/v2` | The API's base address. |
+| `TokenUrl` | `https://login.churchsuite.com/oauth2/token` | The OAuth token endpoint. |
 
-It does nothing if nothing has changed since the last stable release.
+## Versioning
 
-Pre-releases:
+All packages are released together and share one version number, so keep them on the same version. The project is pre-1.0, so a minor version bump may include breaking changes; check the [release notes](https://github.com/JasonElkin/churchsuite-dotnet/releases) before upgrading.
 
-- Are numbered per version and channel: `v0.3.0-beta.1`, `v0.3.0-beta.2`, `v0.3.0-rc.1`. Channels only move forward (alpha → beta → rc).
-- Are marked as pre-releases on GitHub and NuGet; install with `--prerelease` or the exact version.
-- Are followed by the stable release of the same version: once `v0.3.0-beta.2` is out, a `minor` or `patch` release publishes `v0.3.0`, with notes covering everything since the last stable release.
+## Contributing
 
-Preview the next release and its notes locally:
+Bug reports and pull requests are welcome. See [CONTRIBUTING.md](https://github.com/JasonElkin/churchsuite-dotnet/blob/main/CONTRIBUTING.md) for how the project is built and released.
 
-```powershell
-./scripts/tag-release.ps1 [-Bump minor] [-Prerelease beta]
-```
+## License
 
-### One-time setup
-
-| Secret | Purpose |
-|---|---|
-| `NUGET_USER` | Your nuget.org profile name, for [trusted publishing](https://learn.microsoft.com/nuget/nuget-org/trusted-publishing) (no API key). Also add a trusted publishing policy on nuget.org for this repo and `release.yml`. |
-| `PR_TOKEN` | A fine-grained PAT (Contents and Pull requests: read and write) or GitHub App token, so CI runs on the update PRs. Without it the PRs are still opened, but CI doesn't run on them. |
+[MIT](https://github.com/JasonElkin/churchsuite-dotnet/blob/main/LICENSE)

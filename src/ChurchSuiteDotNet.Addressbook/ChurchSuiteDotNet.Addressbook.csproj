@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>ChurchSuite v2 API client for the Addressbook module (generated with Kiota).</Description>
+    <Description>Community-maintained .NET client for the ChurchSuite Address Book API: adult contacts, tags, key dates, custom fields, flows and form responses.</Description>
+    <PackageTags>$(PackageTags);addressbook</PackageTags>
     <NoWarn>$(NoWarn);CS1591;CS8618</NoWarn>
   </PropertyGroup>
 

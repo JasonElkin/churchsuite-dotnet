@@ -13,13 +13,17 @@
 
   <PropertyGroup Condition="'$(IsPackable)' != 'false' and '$(MSBuildProjectDirectory.Contains(tests))' != 'true'">
     <Authors>Jason Elkin</Authors>
-    <Description>.NET client for the ChurchSuite v2 API.</Description>
+    <Description>Community-maintained .NET client for the ChurchSuite v2 API.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>icon.png</PackageIcon>
     <PackageProjectUrl>https://github.com/JasonElkin/churchsuite-dotnet</PackageProjectUrl>
     <RepositoryUrl>https://github.com/JasonElkin/churchsuite-dotnet</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>churchsuite;api;kiota</PackageTags>
+    <!-- Projects append their own tags, e.g. $(PackageTags);calendar. -->
+    <PackageTags>churchsuite;church;chms;api;client;sdk;kiota</PackageTags>
+    <PackageReleaseNotes>https://github.com/JasonElkin/churchsuite-dotnet/releases</PackageReleaseNotes>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
@@ -28,5 +32,6 @@
 
   <ItemGroup Condition="'$(IsPackable)' != 'false'">
     <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" Visible="false" />
+    <None Include="$(MSBuildThisFileDirectory)assets/icon.png" Pack="true" PackagePath="\" Visible="false" />
   </ItemGroup>
 </Project>

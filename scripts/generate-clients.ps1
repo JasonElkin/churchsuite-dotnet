@@ -69,13 +69,15 @@ try {
             git checkout -- $lockFile
         }
 
+        # Only written for a new module. Extend its Description to say what the module covers, like the others.
         $csproj = Join-Path $projectDir "$projectName.csproj"
         if (-not (Test-Path $csproj)) {
             @"
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>ChurchSuite v2 API client for the $module module (generated with Kiota).</Description>
+    <Description>Community-maintained .NET client for the ChurchSuite $module API.</Description>
+    <PackageTags>`$(PackageTags);$($allModules[$module])</PackageTags>
     <NoWarn>`$(NoWarn);CS1591;CS8618</NoWarn>
   </PropertyGroup>
 

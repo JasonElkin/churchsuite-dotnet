@@ -1,5 +1,5 @@
 <Solution>
-  <Folder Name="/x/">
+  <Folder Name="/src/">
     <Project Path="src/ChurchSuiteDotNet.Account/ChurchSuiteDotNet.Account.csproj" />
     <Project Path="src/ChurchSuiteDotNet.Addressbook/ChurchSuiteDotNet.Addressbook.csproj" />
     <Project Path="src/ChurchSuiteDotNet.Attendance/ChurchSuiteDotNet.Attendance.csproj" />
@@ -13,6 +13,8 @@
     <Project Path="src/ChurchSuiteDotNet.Rotas/ChurchSuiteDotNet.Rotas.csproj" />
     <Project Path="src/ChurchSuiteDotNet.SmallGroups/ChurchSuiteDotNet.SmallGroups.csproj" />
     <Project Path="src/ChurchSuiteDotNet/ChurchSuiteDotNet.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
     <Project Path="tests/ChurchSuiteDotNet.Tests/ChurchSuiteDotNet.Tests.csproj" />
   </Folder>
 </Solution>

@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>ChurchSuite v2 API client for the Children module (generated with Kiota).</Description>
+    <Description>Community-maintained .NET client for the ChurchSuite Children API: children, parents and carers, groups, tags, key dates and custom fields.</Description>
+    <PackageTags>$(PackageTags);children</PackageTags>
     <NoWarn>$(NoWarn);CS1591;CS8618</NoWarn>
   </PropertyGroup>
 

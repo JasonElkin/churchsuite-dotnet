@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>ChurchSuite v2 API client for the Bookings module (generated with Kiota).</Description>
+    <Description>Community-maintained .NET client for the ChurchSuite Bookings API: bookings, resources, customers, prices and charges.</Description>
+    <PackageTags>$(PackageTags);bookings</PackageTags>
     <NoWarn>$(NoWarn);CS1591;CS8618</NoWarn>
   </PropertyGroup>
 

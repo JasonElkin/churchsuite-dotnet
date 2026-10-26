@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Microsoft.Extensions.DependencyInjection registration for the ChurchSuiteDotNet clients (IHttpClientFactory, resilience, configuration binding).</Description>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Description>Registers ChurchSuiteDotNet clients with Microsoft.Extensions.DependencyInjection, with IHttpClientFactory, standard resilience and configuration binding. For ASP.NET Core, worker services and other hosted apps.</Description>
+    <PackageTags>$(PackageTags);dependency-injection;aspnetcore</PackageTags>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 

@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>ChurchSuite v2 API client for the Calendar module (generated with Kiota).</Description>
+    <Description>Community-maintained .NET client for the ChurchSuite Calendar API: events, categories, sign-ups, tickets and invites.</Description>
+    <PackageTags>$(PackageTags);calendar</PackageTags>
     <NoWarn>$(NoWarn);CS1591;CS8618</NoWarn>
   </PropertyGroup>
 

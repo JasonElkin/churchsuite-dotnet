@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>ChurchSuite v2 API client for the Network module (generated with Kiota).</Description>
+    <Description>Community-maintained .NET client for the ChurchSuite Network API: partner organisations, members, roles and key dates.</Description>
+    <PackageTags>$(PackageTags);network</PackageTags>
     <NoWarn>$(NoWarn);CS1591;CS8618</NoWarn>
   </PropertyGroup>
 

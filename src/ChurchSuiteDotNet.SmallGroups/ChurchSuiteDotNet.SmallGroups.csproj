@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>ChurchSuite v2 API client for the SmallGroups module (generated with Kiota).</Description>
+    <Description>Community-maintained .NET client for the ChurchSuite Small Groups API: groups, clusters, members, roles and attendance.</Description>
+    <PackageTags>$(PackageTags);smallgroups</PackageTags>
     <NoWarn>$(NoWarn);CS1591;CS8618</NoWarn>
   </PropertyGroup>
 

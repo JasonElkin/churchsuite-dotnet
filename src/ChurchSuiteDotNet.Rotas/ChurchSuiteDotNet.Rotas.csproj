@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>ChurchSuite v2 API client for the Rotas module (generated with Kiota).</Description>
+    <Description>Community-maintained .NET client for the ChurchSuite Rotas API: ministries, teams, roles and unavailability.</Description>
+    <PackageTags>$(PackageTags);rotas</PackageTags>
     <NoWarn>$(NoWarn);CS1591;CS8618</NoWarn>
   </PropertyGroup>
 

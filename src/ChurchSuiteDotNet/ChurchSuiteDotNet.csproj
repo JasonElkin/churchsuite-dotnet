@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Core authentication and client creation for the ChurchSuite v2 API. Used by the ChurchSuiteDotNet.* module packages.</Description>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Description>Core authentication and client creation for ChurchSuiteDotNet, a community-maintained .NET client for the ChurchSuite v2 API. You don't usually need to install this directly; install a module package such as ChurchSuiteDotNet.Calendar.</Description>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 

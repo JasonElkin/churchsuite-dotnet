@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>ChurchSuite v2 API client for the Giving module (generated with Kiota).</Description>
+    <Description>Community-maintained .NET client for the ChurchSuite Giving API: donations, givers, funds, pledges, declarations and Gift Aid claims.</Description>
+    <PackageTags>$(PackageTags);giving</PackageTags>
     <NoWarn>$(NoWarn);CS1591;CS8618</NoWarn>
   </PropertyGroup>
 

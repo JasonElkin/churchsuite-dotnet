@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>ChurchSuite v2 API client for the Account module (generated with Kiota).</Description>
+    <Description>Community-maintained .NET client for the ChurchSuite Account API: account settings, brands, sites, users and integrations.</Description>
+    <PackageTags>$(PackageTags);account</PackageTags>
     <NoWarn>$(NoWarn);CS1591;CS8618</NoWarn>
   </PropertyGroup>
 
