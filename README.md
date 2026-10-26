@@ -1,5 +1,10 @@
 # ChurchSuiteDotNet
 
+[![NuGet](https://img.shields.io/nuget/v/ChurchSuiteDotNet?logo=nuget)](https://www.nuget.org/packages/ChurchSuiteDotNet)
+[![NuGet downloads](https://img.shields.io/nuget/dt/ChurchSuiteDotNet?logo=nuget)](https://www.nuget.org/packages/ChurchSuiteDotNet)
+[![CI](https://github.com/JasonElkin/churchsuite-dotnet/actions/workflows/ci.yml/badge.svg)](https://github.com/JasonElkin/churchsuite-dotnet/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/github/license/JasonElkin/churchsuite-dotnet)](LICENSE)
+
 A .NET client for the [ChurchSuite v2 API](https://github.com/ChurchSuite/churchsuite-api).
 
 - **Strongly typed:** clients for every ChurchSuite API module, generated from ChurchSuite's own OpenAPI specs.
