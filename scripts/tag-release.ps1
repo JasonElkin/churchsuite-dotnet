@@ -9,12 +9,20 @@
 
 .PARAMETER Bump
     Which part of the last stable version to increment (default: minor). Taken literally: major from 0.x goes to
-    1.0.0. (The Update clients PR suggests minor rather than major for breaking changes while 0.x.)
+    1.0.0. (The Update clients PR suggests minor for breaking changes in generated code, as the versioning policy
+    in CONTRIBUTING.md allows, and for any breaking change while 0.x.)
     Pending pre-releases count: with v0.3.0-beta.2 out, minor or patch from v0.2.0 releases 0.3.0.
 
 .PARAMETER Prerelease
     Release a pre-release on this channel (alpha, beta or rc) instead of a stable version, numbered after any
     earlier ones for the same version (v0.3.0-beta.1, v0.3.0-beta.2, v0.3.0-rc.1, ...).
+
+.PARAMETER Breaking
+    Projects whose generated API has breaking changes (comma separated or as an array), listed under a flagged
+    section of the release notes.
+
+.PARAMETER DetailsUrl
+    Where the breaking changes are listed in full (the update PR), linked from that section.
 
 .PARAMETER Json
     Print the plan as a JSON object (Tag, Version, Prerelease, LastTag, Notes) instead of a preview. Prints
@@ -24,6 +32,8 @@
 param(
     [ValidateSet("major", "minor", "patch")] [string] $Bump = "minor",
     [ValidateSet("", "alpha", "beta", "rc")] [string] $Prerelease = "",
+    [string[]] $Breaking = @(),
+    [string] $DetailsUrl = "",
     [switch] $Json
 )
 
@@ -71,13 +81,23 @@ try {
     $unchanged = ($packages | Where-Object { $_ -notin $changedPackages } | ForEach-Object { "``$_``" }) -join ", "
     $unchangedLine = if ($unchanged) { "`n`nRe-released unchanged: $unchanged." } else { "" }
 
+    $breakingProjects = @($Breaking | ForEach-Object { $_ -split ',' } | ForEach-Object Trim | Where-Object { $_ })
+    $breakingSection = if ($breakingProjects) {
+        $see = if ($DetailsUrl) { " The changed types and members are listed in $DetailsUrl." } else { "" }
+        "### Breaking changes in generated code`n`n" +
+        "ChurchSuite's OpenAPI spec changed in ways that break the generated clients of these packages, so code that names a changed type or member may need updating.$see " +
+        "As the [versioning policy](https://github.com/JasonElkin/churchsuite-dotnet#versioning) explains, these changes ship in minor releases.`n`n" +
+        (($breakingProjects | ForEach-Object { "- ``$_``" }) -join "`n") + "`n`n"
+    }
+    else { "" }
+
     $install = if ($Prerelease) { "This is a pre-release. " } else { "" }
     $commitList = if ($commits) { ($commits | ForEach-Object { "- $_" }) -join "`n" } else { "_No new commits; same code as ``$lastTag``._" }
 
     $notes = @"
 $($install)All ChurchSuiteDotNet packages are released together at $version, e.g. ``dotnet add package ChurchSuiteDotNet.Calendar --version $version``.
 $(if ($specLine) { "`n$specLine`n" })
-### Packages with changes $since
+$($breakingSection)### Packages with changes $since
 $changed$unchangedLine
 
 ### Commits

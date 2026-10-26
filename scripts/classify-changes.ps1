@@ -4,8 +4,10 @@
     Classifies the change to each module since the last release as breaking, additive or docs-only, using SDK
     package validation (ApiCompat) against the last published package, and suggests one bump for the release.
 
-    Packages are versioned in lockstep, so the suggested bump is the largest across modules. Breaking is major
-    from 1.x upwards and minor while 0.x; additive (or a new module) is minor; docs-only is patch.
+    Packages are versioned in lockstep, so the suggested bump is the largest across modules. Following the
+    versioning policy in CONTRIBUTING.md, a break in the generated code is minor (the release notes flag it),
+    while a break in the hand-written ChurchSuiteClientFactoryExtensions is major from 1.x upwards and minor while
+    0.x. Additive (or a new module) is minor; docs-only is patch.
 
 .PARAMETER Modules
     Project names (ChurchSuiteDotNet.Calendar) or prefixes (calendar), comma separated or as an array.
@@ -14,7 +16,8 @@
     Where to write the Markdown table for the PR body.
 
 .OUTPUTS
-    Writes bump=<major|minor|patch> to $GITHUB_OUTPUT when running in Actions.
+    Writes bump=<major|minor|patch> and breaking=<projects with breaking generated changes, comma separated> to
+    $GITHUB_OUTPUT when running in Actions.
 #>
 [CmdletBinding()]
 param(
@@ -48,6 +51,8 @@ try {
     $rank = @{ patch = 0; minor = 1; major = 2 }
     $bump = "patch"
     $rows = @()
+    $breaking = @()
+    $details = @()
     foreach ($m in ($Modules | ForEach-Object { $_ -split ',' } | Where-Object { $_ })) {
         $prefix = ($m -replace '^ChurchSuiteDotNet\.', '').ToLowerInvariant()
         $name = (Get-ChildItem src -Directory | Where-Object { $_.Name -ieq "ChurchSuiteDotNet.$prefix" }).Name
@@ -62,8 +67,16 @@ try {
         else {
             $errors = @(Get-CompatErrors "src/$name" $false)
             if ($errors) {
-                $kind = "breaking"
-                $suggested = if ($last.StartsWith("0.")) { "minor" } else { "major" }
+                # Each module ships one hand-written type; any other break is in the generated code.
+                $handWritten = @($errors -match 'ChurchSuiteClientFactoryExtensions')
+                if ($errors.Count -gt $handWritten.Count) { $breaking += $name }
+                if ($handWritten) {
+                    $kind = "breaking (hand-written)"
+                    $suggested = if ($last.StartsWith("0.")) { "minor" } else { "major" }
+                }
+                else { $kind = "breaking (generated)"; $suggested = "minor" }
+                $apis = @($errors | ForEach-Object { if ($_ -match "(?<rule>CP\d{4}): (Type|Member) '(?<api>[^']+)'") { "- ``$($Matches.api)`` ($($Matches.rule))" } } | Sort-Object -Unique)
+                $details += "<details><summary>$name ($($apis.Count) changed)</summary>`n`n$($apis -join "`n")`n`n</details>"
             }
             else {
                 $errors = @(Get-CompatErrors "src/$name" $true)
@@ -77,12 +90,16 @@ try {
     }
 
     $baseline = if ($lastTag) { "Compared with ``$lastTag``." } else { "No release yet; the first release is 0.1.0." }
+    $policy = if ($breaking) { @("", "Breaking changes in generated code ship in a minor release and are flagged in the release notes (see Versioning in CONTRIBUTING.md). Members removed or changed:", "") } else { @() }
     New-Item -ItemType Directory -Force -Path (Split-Path $MarkdownPath) | Out-Null
-    @("| Module | Change | Suggests |", "|---|---|---|") + $rows + @("", $baseline) | Set-Content $MarkdownPath
+    @("| Module | Change | Suggests |", "|---|---|---|") + $rows + @("", $baseline) + $policy + $details | Set-Content $MarkdownPath
     Get-Content $MarkdownPath
     Write-Host "Suggested bump: $bump"
 
-    if ($env:GITHUB_OUTPUT) { "bump=$bump" | Add-Content $env:GITHUB_OUTPUT }
+    if ($env:GITHUB_OUTPUT) {
+        "bump=$bump" | Add-Content $env:GITHUB_OUTPUT
+        "breaking=$($breaking -join ',')" | Add-Content $env:GITHUB_OUTPUT
+    }
 }
 finally {
     Pop-Location

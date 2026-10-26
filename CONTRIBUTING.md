@@ -51,14 +51,20 @@ The rest of this document covers versioning and publishing, which only maintaine
 - Every release publishes every package. Modules depend on the core package of the same release.
 - The first release is `0.1.0`. While at 0.x, breaking changes are suggested as a minor bump; run a manual `major` release to move to 1.0.0.
 
+The versioning policy (summarised for users under [Versioning](README.md#versioning) in the README):
+
+- **Hand-written code follows SemVer strictly:** everything outside `Generated/`, i.e. the core package, the DI package and each module's `ChurchSuiteClientFactoryExtensions`. A breaking change here needs a major release (minor while 0.x).
+- **Generated code follows the spec:** ChurchSuite restructures its specs without changing the API (OpenAPI version upgrades, moving inline schemas into shared ones, tightening `additionalProperties`), and Kiota then renames or retypes classes. Breaking changes in `Generated/` ship in a minor release, flagged under **Breaking changes in generated code** in the release notes.
+- **Also major:** a new major version of the Kiota libraries (their types are in our public API), or a deliberate change to the generator version or flags that breaks the generated code.
+
 ### Releasing an API update
 
 1. **Update clients** runs weekly (or manually from the Actions tab). It pins the latest upstream tag, regenerates, and, if any module's generated code changed, opens a PR labelled `api-update` containing:
    - the upstream CHANGELOG entries;
-   - each module's change, classified as breaking, additive or docs-only (SDK package validation against the last stable release);
-   - a `release-plan` block with one suggested bump, e.g. `bump: minor`.
-2. **Review the PR.** Change the `bump:` line if you disagree, or delete it to merge without publishing. Re-runs rewrite the PR body, so edit it just before merging.
-3. **Merge.** The **Release** workflow tests, tags, packs every package, pushes them to NuGet (core first) and creates one GitHub release with the packages attached. The tag is only pushed once NuGet has accepted every package, so a failed run can simply be re-run.
+   - each module's change, classified as breaking (generated), breaking (hand-written), additive or docs-only (SDK package validation against the last stable release), with the removed or changed members of any breaking module;
+   - a `release-plan` block with one suggested bump, e.g. `bump: minor`, and a `breaking:` line listing the modules whose generated code broke.
+2. **Review the PR.** Change the `bump:` line if you disagree, or delete it to merge without publishing. Edit the `breaking:` line if a module should (or shouldn't) be flagged. Re-runs rewrite the PR body, so edit it just before merging.
+3. **Merge.** The **Release** workflow tests, tags, packs every package, pushes them to NuGet (core first) and creates one GitHub release with the packages attached. Modules on the `breaking:` line are listed under **Breaking changes in generated code** in the release notes, with a link back to the PR. The tag is only pushed once NuGet has accepted every package, so a failed run can simply be re-run.
 
 Merged update PRs always publish a stable release.
 

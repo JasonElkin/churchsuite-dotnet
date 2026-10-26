@@ -2,7 +2,8 @@ name: Release
 
 # Publishes every package to NuGet at one shared version (lockstep, tag v<version>, or v<version>-<alpha|beta|rc>.<n>).
 # Runs when an automation/update-clients PR (label api-update) is merged, using the bump in the release-plan
-# block of the PR body (always stable), or manually for core/DI changes, one-off and pre-releases.
+# block of the PR body (always stable; modules on its optional breaking line are flagged in the release notes),
+# or manually for core/DI changes, one-off and pre-releases.
 on:
   pull_request:
     types: [closed]
@@ -57,22 +58,27 @@ jobs:
         env:
           EVENT: ${{ github.event_name }}
           PR_BODY: ${{ github.event.pull_request.body }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
           BUMP: ${{ inputs.bump }}
           PRERELEASE: ${{ inputs.prerelease }}
         run: |
           $bump = $env:BUMP
           # Merged update PRs always publish a stable release.
           $prerelease = if ($env:PRERELEASE -and $env:PRERELEASE -ne 'none') { $env:PRERELEASE } else { '' }
+          # Modules whose generated code broke, flagged in the release notes (see Versioning in CONTRIBUTING.md).
+          $breaking = ''
           if ($env:EVENT -eq 'pull_request') {
             if ($env:PR_BODY -notmatch '(?s)<!-- release-plan[^>]*-->(?<plan>.*?)<!-- /release-plan -->') { throw "No release-plan block in the PR body" }
-            if ($Matches.plan -notmatch '(?m)^\s*bump:\s*(?<bump>major|minor|patch)\s*$') {
+            $releasePlan = $Matches.plan
+            if ($releasePlan -notmatch '(?m)^\s*bump:\s*(?<bump>major|minor|patch)\s*$') {
               Write-Host "The release plan has no bump line; not publishing."
               return
             }
             $bump = $Matches.bump
+            if ($releasePlan -match '(?m)^\s*breaking:\s*(?<modules>\S.*?)\s*$') { $breaking = $Matches.modules }
           }
 
-          $json = ./scripts/tag-release.ps1 -Bump $bump -Prerelease $prerelease -Json
+          $json = ./scripts/tag-release.ps1 -Bump $bump -Prerelease $prerelease -Breaking $breaking -DetailsUrl $env:PR_URL -Json
           if (-not $json) { Write-Host "Nothing to release."; return }
           $plan = $json | ConvertFrom-Json
           $plan.Notes | Set-Content "$env:RUNNER_TEMP/notes.md"

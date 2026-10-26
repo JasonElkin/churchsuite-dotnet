@@ -120,7 +120,15 @@ Options are validated up front: `ChurchSuiteClientFactory` throws an `ArgumentEx
 
 ## Versioning
 
-All packages are released together and share one version number, so keep them on the same version. The project is pre-1.0, so a minor version bump may include breaking changes; check the [release notes](https://github.com/JasonElkin/churchsuite-dotnet/releases) before upgrading.
+All packages are released together and share one version number, so keep them on the same version.
+
+ChurchSuiteDotNet follows [Semantic Versioning](https://semver.org/) for the code written by hand: `ChurchSuiteClientFactory`, `ChurchSuiteOptions`, `ChurchSuiteTokenProvider`, the dependency injection extensions and the `Create<Module>Client()` helpers. Breaking changes to these only come in a major release.
+
+The module clients (`CalendarClient` and the request builders and models under it) are generated from ChurchSuite's OpenAPI specs and follow them. ChurchSuite sometimes restructures a spec without changing the API itself, which can rename or retype generated classes. Those changes ship in **minor** releases, and the release notes list the affected packages under **Breaking changes in generated code**. Code that only calls the clients and uses `var` is rarely affected; you're most likely to notice when you name a generated model type.
+
+Major releases are for breaking changes to the hand-written code, a new major version of the [Kiota](https://learn.microsoft.com/openapi/kiota/) libraries, or a deliberate change to how the clients are generated. Until 1.0, minor releases may also break the hand-written code.
+
+Check the [release notes](https://github.com/JasonElkin/churchsuite-dotnet/releases) before upgrading.
 
 ## Contributing
 

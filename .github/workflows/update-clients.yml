@@ -59,6 +59,7 @@ jobs:
           -Changed '${{ steps.changes.outputs.changed }}'
           -New '${{ steps.changes.outputs.new }}'
           -Bump '${{ steps.classify.outputs.bump }}'
+          -Breaking '${{ steps.classify.outputs.breaking }}'
           -OutPath "$env:RUNNER_TEMP/pr-body.md"
 
       - name: Create pull request
