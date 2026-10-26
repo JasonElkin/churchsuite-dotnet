@@ -5,11 +5,11 @@
     GitHub release).
 
     All packages are versioned in lockstep and released together from one tag: v0.4.0 for a stable release,
-    v0.4.0-beta.1 for a pre-release. The first release is 0.1.0.
+    v0.4.0-beta.1 for a pre-release. The first stable release is 0.1.0, or 1.0.0 with -Bump major.
 
 .PARAMETER Bump
-    Which part of the last stable version to increment (default: minor). Taken literally: major from 0.x goes to
-    1.0.0. (The Update clients PR suggests minor for breaking changes in generated code, as the versioning policy
+    Which part of the last stable version to increment (default: minor). Taken literally: major from 0.x, or
+    before any stable release, goes to 1.0.0 (-Prerelease rc gives 1.0.0-rc.1). (The Update clients PR suggests minor for breaking changes in generated code, as the versioning policy
     in CONTRIBUTING.md allows, and for any breaking change while 0.x.)
     Pending pre-releases count: with v0.3.0-beta.2 out, minor or patch from v0.2.0 releases 0.3.0.
 

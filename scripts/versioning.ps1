@@ -24,6 +24,7 @@ function Get-LastStableTag {
 
 # The next version for a bump of the last stable release, as a pre-release on the given channel if one is given.
 # Pending pre-releases count: with v0.3.0-beta.2 out, a minor or patch bump from v0.2.0 gives 0.3.0 (or 0.3.0-rc.1).
+# With no stable release yet, major gives 1.0.0 (or 1.0.0-rc.1) and anything else 0.1.0.
 function Get-NextVersion([string] $Bump, [string] $Prerelease) {
     $tags = Get-ReleaseTags
     $stable = $tags | Where-Object { -not $_.Channel } | Select-Object -Last 1
@@ -36,6 +37,8 @@ function Get-NextVersion([string] $Bump, [string] $Prerelease) {
             default { [version]::new($v.Major, $v.Minor, $v.Build + 1) }
         }
     }
+    # The first stable release is 0.1.0, or 1.0.0 for a major bump; pre-releases don't count as a release.
+    elseif ($Bump -eq "major") { [version]"1.0.0" }
     else { [version]"0.1.0" }
 
     $pending = $tags | Where-Object { $_.Channel -and (-not $stable -or $_.Base -gt $stable.Base) } | Select-Object -Last 1

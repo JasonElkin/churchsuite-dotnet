@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
     inputs:
       bump:
-        description: Which part of the version to increment (major from 0.x goes to 1.0.0; first release is 0.1.0)
+        description: Which part of the version to increment (major from 0.x, or before any stable release, goes to 1.0.0; otherwise the first release is 0.1.0)
         type: choice
         options: [minor, patch, major]
         default: minor

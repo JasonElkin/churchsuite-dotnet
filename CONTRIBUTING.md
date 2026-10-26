@@ -49,7 +49,7 @@ The rest of this document covers versioning and publishing, which only maintaine
 
 - All packages share **one version** (lockstep), taken from git tags by [MinVer](https://github.com/adamralph/minver): `v0.4.0` for a release, `v0.4.0-beta.1` for a pre-release.
 - Every release publishes every package. Modules depend on the core package of the same release.
-- The first release is `0.1.0`. While at 0.x, breaking changes are suggested as a minor bump; run a manual `major` release to move to 1.0.0.
+- The first stable release is `0.1.0`. While at 0.x, breaking changes are suggested as a minor bump; run a manual `major` release to move to 1.0.0. This works before any stable release too (pre-releases such as `v0.1.0-alpha.2` don't count), and with `prerelease: rc` it publishes `v1.0.0-rc.1` first.
 
 The versioning policy (summarised for users under [Versioning](README.md#versioning) in the README):
 
@@ -74,7 +74,7 @@ Run **Release** from the Actions tab for core/DI changes, one-off releases or pr
 
 | Input | Values | Effect |
 |---|---|---|
-| `bump` | `minor` (default), `patch`, `major` | Which part of the last stable version to increment. |
+| `bump` | `minor` (default), `patch`, `major` | Which part of the last stable version to increment. `major` from 0.x, or before any stable release, gives 1.0.0. |
 | `prerelease` | `none` (default), `alpha`, `beta`, `rc` | Publish a pre-release instead, e.g. `v0.3.0-beta.1`. |
 | `dry_run` | `false` (default), `true` | Plan and pack only; publish nothing. |
 
