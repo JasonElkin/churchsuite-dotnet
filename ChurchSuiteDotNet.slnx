@@ -14,6 +14,9 @@
     <Project Path="src/ChurchSuiteDotNet.SmallGroups/ChurchSuiteDotNet.SmallGroups.csproj" />
     <Project Path="src/ChurchSuiteDotNet/ChurchSuiteDotNet.csproj" />
   </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/ChurchSuiteDotNet.Sample/ChurchSuiteDotNet.Sample.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/ChurchSuiteDotNet.Tests/ChurchSuiteDotNet.Tests.csproj" />
   </Folder>
