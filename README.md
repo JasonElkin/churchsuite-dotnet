@@ -29,7 +29,7 @@ Requires .NET 10 or later.
 
 ## Getting started
 
-You'll need API credentials (a client ID and secret) from your ChurchSuite account. See [ChurchSuite's API documentation](https://github.com/ChurchSuite/churchsuite-api) for how to create them.
+ChurchSuiteDotNet signs in with the OAuth2 client credentials grant, so you'll need an API-enabled ChurchSuite user and a secret created for it. ChurchSuite's [authorisation docs](https://developer.churchsuite.com/auth) walk through setting both up; the user's identifier is your client ID.
 
 ```csharp
 using ChurchSuiteDotNet;
@@ -103,11 +103,11 @@ Requests go through `IHttpClientFactory` with standard resilience (retries, time
 
 | Option | Default | Description |
 |---|---|---|
-| `ClientId` | | Your OAuth client ID. Required. |
-| `ClientSecret` | | Your OAuth client secret. Required. |
-| `Scope` | `full_access` | The OAuth scope to request. |
+| `ClientId` | | The API user's identifier. Required. |
+| `ClientSecret` | | The API user's secret. Required. |
+| `Scope` | `full_access` | Space-separated [OAuth scopes](https://developer.churchsuite.com/auth) to request, e.g. `calendar.read smallgroups.read`. |
 | `BaseUrl` | `https://api.churchsuite.com/v2` | The API's base address. |
-| `TokenUrl` | `https://login.churchsuite.com/oauth2/token` | The OAuth token endpoint. |
+| `TokenUrl` | `https://login.churchsuite.com/oauth2/token` | The OAuth token endpoint. CharitySuite accounts use `https://login.charitysuite.com/oauth2/token`. |
 
 ## Versioning
 
