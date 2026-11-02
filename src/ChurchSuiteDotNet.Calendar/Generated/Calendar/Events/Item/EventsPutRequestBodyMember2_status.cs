@@ -5,7 +5,7 @@ namespace ChurchSuiteDotNet.Calendar.Calendar.Events.Item
 {
     /// <summary>The current status of the Event.</summary>
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
-    public enum EventsPutRequestBody_status
+    public enum EventsPutRequestBodyMember2_status
     {
         [EnumMember(Value = "confirmed")]
         #pragma warning disable CS1591

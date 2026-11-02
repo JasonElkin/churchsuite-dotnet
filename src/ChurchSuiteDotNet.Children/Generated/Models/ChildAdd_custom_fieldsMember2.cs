@@ -14,7 +14,13 @@ namespace ChurchSuiteDotNet.Children.Models
     public partial class ChildAdd_custom_fieldsMember2 : IParsable
     {
         /// <summary>A discriminator to determine the type of Custom Field this response belongs to.</summary>
-        public global::ChurchSuiteDotNet.Children.Models.ChildAdd_custom_fieldsMember2_field_type? FieldType { get; set; }
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? FieldType { get; set; }
+#nullable restore
+#else
+        public string FieldType { get; set; }
+#endif
         /// <summary>The ID of the Custom Field</summary>
         public int? Id { get; set; }
         /// <summary>The raw value of an email.</summary>
@@ -43,7 +49,7 @@ namespace ChurchSuiteDotNet.Children.Models
         {
             return new Dictionary<string, Action<IParseNode>>
             {
-                { "field_type", n => { FieldType = n.GetEnumValue<global::ChurchSuiteDotNet.Children.Models.ChildAdd_custom_fieldsMember2_field_type>(); } },
+                { "field_type", n => { FieldType = n.GetStringValue(); } },
                 { "id", n => { Id = n.GetIntValue(); } },
                 { "value", n => { Value = n.GetStringValue(); } },
             };
@@ -55,7 +61,7 @@ namespace ChurchSuiteDotNet.Children.Models
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
-            writer.WriteEnumValue<global::ChurchSuiteDotNet.Children.Models.ChildAdd_custom_fieldsMember2_field_type>("field_type", FieldType);
+            writer.WriteStringValue("field_type", FieldType);
             writer.WriteIntValue("id", Id);
             writer.WriteStringValue("value", Value);
         }
