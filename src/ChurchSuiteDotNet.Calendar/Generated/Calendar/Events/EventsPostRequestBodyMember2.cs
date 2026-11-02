@@ -9,11 +9,11 @@ namespace ChurchSuiteDotNet.Calendar.Calendar.Events
 {
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
     #pragma warning disable CS1591
-    public partial class EventsPostRequestBody : IAdditionalDataHolder, IParsable
+    public partial class EventsPostRequestBodyMember2 : IParsable
     #pragma warning restore CS1591
     {
-        /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
-        public IDictionary<string, object> AdditionalData { get; set; }
+        /// <summary>Whether the Event belongs to All Sites.</summary>
+        public bool? AllSites { get; set; }
         /// <summary>The Event&apos;s category ID.</summary>
         public int? CategoryId { get; set; }
         /// <summary>The description of the Event.</summary>
@@ -36,26 +36,27 @@ namespace ChurchSuiteDotNet.Calendar.Calendar.Events
 #endif
         /// <summary>If the Event is part of a sequence, this field should contain the sequence ID from an existing Event in the sequence.</summary>
         public int? SequenceId { get; set; }
+        /// <summary>List of all site IDs the Event belongs to.</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public List<int?>? SiteIds { get; set; }
+#nullable restore
+#else
+        public List<int?> SiteIds { get; set; }
+#endif
         /// <summary>Date and time the Event starts.</summary>
         public DateTimeOffset? StartsAt { get; set; }
         /// <summary>The current status of the Event.</summary>
-        public global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsPostRequestBody_status? Status { get; set; }
-        /// <summary>
-        /// Instantiates a new <see cref="global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsPostRequestBody"/> and sets the default values.
-        /// </summary>
-        public EventsPostRequestBody()
-        {
-            AdditionalData = new Dictionary<string, object>();
-        }
+        public global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsPostRequestBodyMember2_status? Status { get; set; }
         /// <summary>
         /// Creates a new instance of the appropriate class based on discriminator value
         /// </summary>
-        /// <returns>A <see cref="global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsPostRequestBody"/></returns>
+        /// <returns>A <see cref="global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsPostRequestBodyMember2"/></returns>
         /// <param name="parseNode">The parse node to use to read the discriminator value and create the object</param>
-        public static global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsPostRequestBody CreateFromDiscriminatorValue(IParseNode parseNode)
+        public static global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsPostRequestBodyMember2 CreateFromDiscriminatorValue(IParseNode parseNode)
         {
             if(ReferenceEquals(parseNode, null)) throw new ArgumentNullException(nameof(parseNode));
-            return new global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsPostRequestBody();
+            return new global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsPostRequestBodyMember2();
         }
         /// <summary>
         /// The deserialization information for the current model
@@ -65,13 +66,15 @@ namespace ChurchSuiteDotNet.Calendar.Calendar.Events
         {
             return new Dictionary<string, Action<IParseNode>>
             {
+                { "all_sites", n => { AllSites = n.GetBoolValue(); } },
                 { "category_id", n => { CategoryId = n.GetIntValue(); } },
                 { "description", n => { Description = n.GetStringValue(); } },
                 { "ends_at", n => { EndsAt = n.GetDateTimeOffsetValue(); } },
                 { "name", n => { Name = n.GetStringValue(); } },
                 { "sequence_id", n => { SequenceId = n.GetIntValue(); } },
+                { "site_ids", n => { SiteIds = n.GetCollectionOfPrimitiveValues<int?>()?.AsList(); } },
                 { "starts_at", n => { StartsAt = n.GetDateTimeOffsetValue(); } },
-                { "status", n => { Status = n.GetEnumValue<global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsPostRequestBody_status>(); } },
+                { "status", n => { Status = n.GetEnumValue<global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsPostRequestBodyMember2_status>(); } },
             };
         }
         /// <summary>
@@ -81,14 +84,15 @@ namespace ChurchSuiteDotNet.Calendar.Calendar.Events
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
+            writer.WriteBoolValue("all_sites", AllSites);
             writer.WriteIntValue("category_id", CategoryId);
             writer.WriteStringValue("description", Description);
             writer.WriteDateTimeOffsetValue("ends_at", EndsAt);
             writer.WriteStringValue("name", Name);
             writer.WriteIntValue("sequence_id", SequenceId);
+            writer.WriteCollectionOfPrimitiveValues<int?>("site_ids", SiteIds);
             writer.WriteDateTimeOffsetValue("starts_at", StartsAt);
-            writer.WriteEnumValue<global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsPostRequestBody_status>("status", Status);
-            writer.WriteAdditionalData(AdditionalData);
+            writer.WriteEnumValue<global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsPostRequestBodyMember2_status>("status", Status);
         }
     }
 }

@@ -291,7 +291,7 @@ namespace ChurchSuiteDotNet.Children.Models
             public static global::ChurchSuiteDotNet.Children.Models.ChildAdd.ChildAdd_custom_fields CreateFromDiscriminatorValue(IParseNode parseNode)
             {
                 if(ReferenceEquals(parseNode, null)) throw new ArgumentNullException(nameof(parseNode));
-                var mappingValue = parseNode.GetChildNode("field_type")?.GetStringValue();
+                var mappingValue = parseNode.GetChildNode("")?.GetStringValue();
                 var result = new global::ChurchSuiteDotNet.Children.Models.ChildAdd.ChildAdd_custom_fields();
                 return result;
             }

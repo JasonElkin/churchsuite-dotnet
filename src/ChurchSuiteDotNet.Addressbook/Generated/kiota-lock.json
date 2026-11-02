@@ -1,6 +1,6 @@
 {
-  "descriptionHash": "95FB0091638C5D20BE47668CAFCB7A1029C5B0B3E62E1EB3ACD69207D9A70DF0BA9D9B15EB3CE4D265B912D90EE4F45F6A407064AF8E2DD8C773F98FD3FB641F",
-  "descriptionLocation": "https://raw.githubusercontent.com/ChurchSuite/churchsuite-api/refs/heads/master/src/addressbook.yaml",
+  "descriptionHash": "681F840A34B147C9519681E50072EF582E0B941DE9A6255ABA818C5927B298D3F64EB8BE124B343FCCFE471E2E729EAC8BC55E7F4CEBD6345B7053F4AC8C244D",
+  "descriptionLocation": "../../../specs/addressbook.yaml",
   "lockFileVersion": "1.0.0",
   "kiotaVersion": "1.35.0",
   "clientClassName": "AddressbookClient",

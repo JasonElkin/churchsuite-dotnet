@@ -16,7 +16,13 @@ namespace ChurchSuiteDotNet.Calendar.Models
         /// <summary>The ID of the Question</summary>
         public int? QuestionId { get; set; }
         /// <summary>A discriminator to determine the type of Question this response belongs to.</summary>
-        public global::ChurchSuiteDotNet.Calendar.Models.SignupsMember2_question_type? QuestionType { get; set; }
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? QuestionType { get; set; }
+#nullable restore
+#else
+        public string QuestionType { get; set; }
+#endif
         /// <summary>Value of date response type.</summary>
         public Date? Value { get; set; }
         /// <summary>
@@ -38,7 +44,7 @@ namespace ChurchSuiteDotNet.Calendar.Models
             return new Dictionary<string, Action<IParseNode>>
             {
                 { "question_id", n => { QuestionId = n.GetIntValue(); } },
-                { "question_type", n => { QuestionType = n.GetEnumValue<global::ChurchSuiteDotNet.Calendar.Models.SignupsMember2_question_type>(); } },
+                { "question_type", n => { QuestionType = n.GetStringValue(); } },
                 { "value", n => { Value = n.GetDateValue(); } },
             };
         }
@@ -50,7 +56,7 @@ namespace ChurchSuiteDotNet.Calendar.Models
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
             writer.WriteIntValue("question_id", QuestionId);
-            writer.WriteEnumValue<global::ChurchSuiteDotNet.Calendar.Models.SignupsMember2_question_type>("question_type", QuestionType);
+            writer.WriteStringValue("question_type", QuestionType);
             writer.WriteDateValue("value", Value);
         }
     }

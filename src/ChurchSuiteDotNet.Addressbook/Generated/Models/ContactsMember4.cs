@@ -14,7 +14,13 @@ namespace ChurchSuiteDotNet.Addressbook.Models
     public partial class ContactsMember4 : IParsable
     {
         /// <summary>A discriminator to determine the type of Custom Field this response belongs to.</summary>
-        public global::ChurchSuiteDotNet.Addressbook.Models.ContactsMember4_field_type? FieldType { get; set; }
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? FieldType { get; set; }
+#nullable restore
+#else
+        public string FieldType { get; set; }
+#endif
         /// <summary>The ID of the Custom Field</summary>
         public int? Id { get; set; }
         /// <summary>A list of UUIDs of the selected responses for a checkbox field.</summary>
@@ -43,7 +49,7 @@ namespace ChurchSuiteDotNet.Addressbook.Models
         {
             return new Dictionary<string, Action<IParseNode>>
             {
-                { "field_type", n => { FieldType = n.GetEnumValue<global::ChurchSuiteDotNet.Addressbook.Models.ContactsMember4_field_type>(); } },
+                { "field_type", n => { FieldType = n.GetStringValue(); } },
                 { "id", n => { Id = n.GetIntValue(); } },
                 { "value", n => { Value = n.GetCollectionOfObjectValues<global::ChurchSuiteDotNet.Addressbook.Models.ContactsMember4_value>(global::ChurchSuiteDotNet.Addressbook.Models.ContactsMember4_value.CreateFromDiscriminatorValue)?.AsList(); } },
             };
@@ -55,7 +61,7 @@ namespace ChurchSuiteDotNet.Addressbook.Models
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
-            writer.WriteEnumValue<global::ChurchSuiteDotNet.Addressbook.Models.ContactsMember4_field_type>("field_type", FieldType);
+            writer.WriteStringValue("field_type", FieldType);
             writer.WriteIntValue("id", Id);
             writer.WriteCollectionOfObjectValues<global::ChurchSuiteDotNet.Addressbook.Models.ContactsMember4_value>("value", Value);
         }

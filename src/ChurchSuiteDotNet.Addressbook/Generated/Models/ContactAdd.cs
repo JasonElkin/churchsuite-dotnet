@@ -298,7 +298,7 @@ namespace ChurchSuiteDotNet.Addressbook.Models
             public static global::ChurchSuiteDotNet.Addressbook.Models.ContactAdd.ContactAdd_custom_fields CreateFromDiscriminatorValue(IParseNode parseNode)
             {
                 if(ReferenceEquals(parseNode, null)) throw new ArgumentNullException(nameof(parseNode));
-                var mappingValue = parseNode.GetChildNode("field_type")?.GetStringValue();
+                var mappingValue = parseNode.GetChildNode("")?.GetStringValue();
                 var result = new global::ChurchSuiteDotNet.Addressbook.Models.ContactAdd.ContactAdd_custom_fields();
                 return result;
             }
