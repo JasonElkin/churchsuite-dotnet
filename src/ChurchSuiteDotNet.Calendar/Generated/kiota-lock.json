@@ -1,6 +1,6 @@
 {
-  "descriptionHash": "15364B94C7999C5EDE222788AC8148CDB3F5DB514ADB93FC3F1CF21B26F63F42F1F77A5D75C652FB621EBA1E62A4CE16EC7FF2C7DE842CE210689821AAC152F3",
-  "descriptionLocation": "https://raw.githubusercontent.com/ChurchSuite/churchsuite-api/refs/heads/master/src/calendar.yaml",
+  "descriptionHash": "07EF32ADC80EC1D85F6692B1BE31C63F105C8B2BC77782A11D5614776C1FCD434B4BB916891F1C2619983DC4B810FA39D66FBFE6907A22628432B36D9B819ACC",
+  "descriptionLocation": "../../../specs/calendar.yaml",
   "lockFileVersion": "1.0.0",
   "kiotaVersion": "1.35.0",
   "clientClassName": "CalendarClient",

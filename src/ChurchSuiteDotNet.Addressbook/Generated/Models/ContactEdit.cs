@@ -288,7 +288,7 @@ namespace ChurchSuiteDotNet.Addressbook.Models
             public static global::ChurchSuiteDotNet.Addressbook.Models.ContactEdit.Contacts CreateFromDiscriminatorValue(IParseNode parseNode)
             {
                 if(ReferenceEquals(parseNode, null)) throw new ArgumentNullException(nameof(parseNode));
-                var mappingValue = parseNode.GetChildNode("field_type")?.GetStringValue();
+                var mappingValue = parseNode.GetChildNode("")?.GetStringValue();
                 var result = new global::ChurchSuiteDotNet.Addressbook.Models.ContactEdit.Contacts();
                 return result;
             }

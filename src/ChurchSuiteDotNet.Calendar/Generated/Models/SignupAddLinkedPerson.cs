@@ -181,7 +181,7 @@ namespace ChurchSuiteDotNet.Calendar.Models
             public static global::ChurchSuiteDotNet.Calendar.Models.SignupAddLinkedPerson.SignupAddLinkedPerson_question_responses CreateFromDiscriminatorValue(IParseNode parseNode)
             {
                 if(ReferenceEquals(parseNode, null)) throw new ArgumentNullException(nameof(parseNode));
-                var mappingValue = parseNode.GetChildNode("question_type")?.GetStringValue();
+                var mappingValue = parseNode.GetChildNode("")?.GetStringValue();
                 var result = new global::ChurchSuiteDotNet.Calendar.Models.SignupAddLinkedPerson.SignupAddLinkedPerson_question_responses();
                 return result;
             }

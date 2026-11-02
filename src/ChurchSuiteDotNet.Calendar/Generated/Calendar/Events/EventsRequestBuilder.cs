@@ -79,7 +79,7 @@ namespace ChurchSuiteDotNet.Calendar.Calendar.Events
         /// Create an event with the provided settings.
         /// </summary>
         /// <returns>A <see cref="global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsPostResponse"/></returns>
-        /// <param name="body">Create an Event in the Calendar module.</param>
+        /// <param name="body">Create an Event in the Calendar module. Provide either `all_sites` or `site_ids`.</param>
         /// <param name="cancellationToken">Cancellation token to use when cancelling requests</param>
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
         /// <exception cref="global::ChurchSuiteDotNet.Calendar.Models.Events400Error">When receiving a 400 status code</exception>
@@ -89,11 +89,11 @@ namespace ChurchSuiteDotNet.Calendar.Calendar.Events
         /// <exception cref="global::ChurchSuiteDotNet.Calendar.Models.Events429Error">When receiving a 429 status code</exception>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public async Task<global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsPostResponse?> PostAsync(global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsPostRequestBody body, Action<RequestConfiguration<DefaultQueryParameters>>? requestConfiguration = default, CancellationToken cancellationToken = default)
+        public async Task<global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsPostResponse?> PostAsync(global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsRequestBuilder.EventsPostRequestBody body, Action<RequestConfiguration<DefaultQueryParameters>>? requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #nullable restore
 #else
-        public async Task<global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsPostResponse> PostAsync(global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsPostRequestBody body, Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
+        public async Task<global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsPostResponse> PostAsync(global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsRequestBuilder.EventsPostRequestBody body, Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #endif
             if(ReferenceEquals(body, null)) throw new ArgumentNullException(nameof(body));
@@ -131,15 +131,15 @@ namespace ChurchSuiteDotNet.Calendar.Calendar.Events
         /// Create an event with the provided settings.
         /// </summary>
         /// <returns>A <see cref="RequestInformation"/></returns>
-        /// <param name="body">Create an Event in the Calendar module.</param>
+        /// <param name="body">Create an Event in the Calendar module. Provide either `all_sites` or `site_ids`.</param>
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public RequestInformation ToPostRequestInformation(global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsPostRequestBody body, Action<RequestConfiguration<DefaultQueryParameters>>? requestConfiguration = default)
+        public RequestInformation ToPostRequestInformation(global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsRequestBuilder.EventsPostRequestBody body, Action<RequestConfiguration<DefaultQueryParameters>>? requestConfiguration = default)
         {
 #nullable restore
 #else
-        public RequestInformation ToPostRequestInformation(global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsPostRequestBody body, Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default)
+        public RequestInformation ToPostRequestInformation(global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsRequestBuilder.EventsPostRequestBody body, Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default)
         {
 #endif
             if(ReferenceEquals(body, null)) throw new ArgumentNullException(nameof(body));
@@ -157,6 +157,73 @@ namespace ChurchSuiteDotNet.Calendar.Calendar.Events
         public global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsRequestBuilder WithUrl(string rawUrl)
         {
             return new global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsRequestBuilder(rawUrl, RequestAdapter);
+        }
+        /// <summary>
+        /// Composed type wrapper for classes <see cref="global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsPostRequestBodyMember1"/>, <see cref="global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsPostRequestBodyMember2"/>
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
+        public partial class EventsPostRequestBody : IComposedTypeWrapper, IParsable
+        {
+            /// <summary>Composed type representation for type <see cref="global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsPostRequestBodyMember1"/></summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            public global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsPostRequestBodyMember1? EventsPostRequestBodyMember1 { get; set; }
+#nullable restore
+#else
+            public global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsPostRequestBodyMember1 EventsPostRequestBodyMember1 { get; set; }
+#endif
+            /// <summary>Composed type representation for type <see cref="global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsPostRequestBodyMember2"/></summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            public global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsPostRequestBodyMember2? EventsPostRequestBodyMember2 { get; set; }
+#nullable restore
+#else
+            public global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsPostRequestBodyMember2 EventsPostRequestBodyMember2 { get; set; }
+#endif
+            /// <summary>
+            /// Creates a new instance of the appropriate class based on discriminator value
+            /// </summary>
+            /// <returns>A <see cref="global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsRequestBuilder.EventsPostRequestBody"/></returns>
+            /// <param name="parseNode">The parse node to use to read the discriminator value and create the object</param>
+            public static global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsRequestBuilder.EventsPostRequestBody CreateFromDiscriminatorValue(IParseNode parseNode)
+            {
+                if(ReferenceEquals(parseNode, null)) throw new ArgumentNullException(nameof(parseNode));
+                var mappingValue = parseNode.GetChildNode("")?.GetStringValue();
+                var result = new global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsRequestBuilder.EventsPostRequestBody();
+                return result;
+            }
+            /// <summary>
+            /// The deserialization information for the current model
+            /// </summary>
+            /// <returns>A IDictionary&lt;string, Action&lt;IParseNode&gt;&gt;</returns>
+            public virtual IDictionary<string, Action<IParseNode>> GetFieldDeserializers()
+            {
+                if(EventsPostRequestBodyMember1 != null)
+                {
+                    return EventsPostRequestBodyMember1.GetFieldDeserializers();
+                }
+                else if(EventsPostRequestBodyMember2 != null)
+                {
+                    return EventsPostRequestBodyMember2.GetFieldDeserializers();
+                }
+                return new Dictionary<string, Action<IParseNode>>();
+            }
+            /// <summary>
+            /// Serializes information the current object
+            /// </summary>
+            /// <param name="writer">Serialization writer to use to serialize this model</param>
+            public virtual void Serialize(ISerializationWriter writer)
+            {
+                if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
+                if(EventsPostRequestBodyMember1 != null)
+                {
+                    writer.WriteObjectValue<global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsPostRequestBodyMember1>(null, EventsPostRequestBodyMember1);
+                }
+                else if(EventsPostRequestBodyMember2 != null)
+                {
+                    writer.WriteObjectValue<global::ChurchSuiteDotNet.Calendar.Calendar.Events.EventsPostRequestBodyMember2>(null, EventsPostRequestBodyMember2);
+                }
+            }
         }
         /// <summary>
         /// Returns a list of events.

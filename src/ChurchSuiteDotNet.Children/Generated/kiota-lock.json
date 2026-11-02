@@ -1,6 +1,6 @@
 {
-  "descriptionHash": "F39B2BAC8A28229F97231CD00B301C8EC0DB9437F5D704C70C84257FEE707DB87E4438556848002D4983189D00B56E2DD15B6D13FCB27DEC04D47146D362B858",
-  "descriptionLocation": "https://raw.githubusercontent.com/ChurchSuite/churchsuite-api/refs/heads/master/src/children.yaml",
+  "descriptionHash": "D5878DB92C187CDAAC3316D1BC8D09C52C15DF654B63E8ECC5947E5C2319CA76DCAAB389E4D39BFA65FED0F8AD73224A56A57AB3E7833D337AE6F1C0DE58F0FA",
+  "descriptionLocation": "../../../specs/children.yaml",
   "lockFileVersion": "1.0.0",
   "kiotaVersion": "1.35.0",
   "clientClassName": "ChildrenClient",
