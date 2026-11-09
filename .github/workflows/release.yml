@@ -1,4 +1,9 @@
 name: Release
+# The version is only known once the plan step runs; it is shown in the run summary and as an annotation.
+run-name: >-
+  ${{ github.event_name == 'workflow_dispatch'
+      && format('Release ({0}{1}){2}', inputs.bump, inputs.prerelease != 'none' && format(', {0}', inputs.prerelease) || '', inputs.dry_run && ' [dry run]' || '')
+      || format('Release from PR #{0}', github.event.pull_request.number) }}
 
 # Publishes every package to NuGet at one shared version (lockstep, tag v<version>, or v<version>-<alpha|beta|rc>.<n>).
 # Runs when an automation/update-clients PR (label api-update) is merged, using the bump in the release-plan
@@ -61,7 +66,13 @@ jobs:
           PR_URL: ${{ github.event.pull_request.html_url }}
           BUMP: ${{ inputs.bump }}
           PRERELEASE: ${{ inputs.prerelease }}
+          DRY_RUN: ${{ inputs.dry_run }}
         run: |
+          # Say what this run publishes (or would) on the run page: an annotation plus the job summary.
+          function Write-Outcome([string] $Title, [string] $Body) {
+            Write-Host "::notice title=$Title::$($Body -replace '\r?\n', ' ')"
+            "## $Title`n`n$Body`n" | Add-Content $env:GITHUB_STEP_SUMMARY
+          }
           $bump = $env:BUMP
           $prerelease = if ($env:PRERELEASE -and $env:PRERELEASE -ne 'none') { $env:PRERELEASE } else { '' }
           # Modules whose generated code broke, flagged in the release notes (see Versioning in CONTRIBUTING.md).
@@ -70,7 +81,7 @@ jobs:
             if ($env:PR_BODY -notmatch '(?s)<!-- release-plan[^>]*-->(?<plan>.*?)<!-- /release-plan -->') { throw "No release-plan block in the PR body" }
             $releasePlan = $Matches.plan
             if ($releasePlan -notmatch '(?m)^\s*bump:\s*(?<bump>major|minor|patch)\s*$') {
-              Write-Host "The release plan has no bump line; not publishing."
+              Write-Outcome "Nothing published" "The release plan has no bump line."
               return
             }
             $bump = $Matches.bump
@@ -83,8 +94,17 @@ jobs:
           }
 
           $json = ./scripts/tag-release.ps1 -Bump $bump -Prerelease $prerelease -Breaking $breaking -DetailsUrl $env:PR_URL -Json
-          if (-not $json) { Write-Host "Nothing to release."; return }
+          if (-not $json) { Write-Outcome "Nothing to release" "No changes since the last release (or HEAD is already tagged)."; return }
           $plan = $json | ConvertFrom-Json
+          $kind = if ($plan.Prerelease) { "pre-release" } else { "stable release" }
+          $since = if ($plan.LastTag) { "after $($plan.LastTag)" } else { "first release" }
+          if ($env:DRY_RUN -eq 'true') {
+            Write-Outcome "Dry run: would publish $($plan.Version)" "Tag $($plan.Tag), $kind, $since ($bump bump). Nothing is pushed to NuGet or GitHub."
+          }
+          else {
+            Write-Outcome "Publishing $($plan.Version)" "Tag $($plan.Tag), $kind, $since ($bump bump)."
+          }
+          "<details><summary>Release notes</summary>`n`n$($plan.Notes)`n`n</details>" | Add-Content $env:GITHUB_STEP_SUMMARY
           $plan.Notes | Set-Content "$env:RUNNER_TEMP/notes.md"
           "tag=$($plan.Tag)" | Add-Content $env:GITHUB_OUTPUT
           "version=$($plan.Version)" | Add-Content $env:GITHUB_OUTPUT
