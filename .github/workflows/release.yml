@@ -2,7 +2,7 @@ name: Release
 
 # Publishes every package to NuGet at one shared version (lockstep, tag v<version>, or v<version>-<alpha|beta|rc>.<n>).
 # Runs when an automation/update-clients PR (label api-update) is merged, using the bump in the release-plan
-# block of the PR body (always stable; modules on its optional breaking line are flagged in the release notes),
+# block of the PR body (stable unless it has a prerelease line; modules on its optional breaking line are flagged in the release notes),
 # or manually for core/DI changes, one-off and pre-releases.
 on:
   pull_request:
@@ -63,7 +63,6 @@ jobs:
           PRERELEASE: ${{ inputs.prerelease }}
         run: |
           $bump = $env:BUMP
-          # Merged update PRs always publish a stable release.
           $prerelease = if ($env:PRERELEASE -and $env:PRERELEASE -ne 'none') { $env:PRERELEASE } else { '' }
           # Modules whose generated code broke, flagged in the release notes (see Versioning in CONTRIBUTING.md).
           $breaking = ''
@@ -75,6 +74,11 @@ jobs:
               return
             }
             $bump = $Matches.bump
+            # A prerelease line (pre-filled while a pre-release series is in progress) publishes on that channel.
+            if ($releasePlan -match '(?m)^\s*prerelease:\s*(?<channel>\S.*?)\s*$') {
+              $prerelease = $Matches.channel
+              if ($prerelease -notin 'alpha', 'beta', 'rc') { throw "Unknown prerelease channel '$prerelease' in the release plan (use alpha, beta or rc, or delete the line for a stable release)" }
+            }
             if ($releasePlan -match '(?m)^\s*breaking:\s*(?<modules>\S.*?)\s*$') { $breaking = $Matches.modules }
           }
 

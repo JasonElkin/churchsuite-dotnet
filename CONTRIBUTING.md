@@ -62,11 +62,11 @@ The versioning policy (summarised for users under [Versioning](README.md#version
 1. **Update clients** runs weekly (or manually from the Actions tab). It pins the latest upstream tag, regenerates, and, if any module's generated code changed, opens a PR labelled `api-update` containing:
    - the upstream CHANGELOG entries;
    - each module's change, classified as breaking (generated), breaking (hand-written), additive or docs-only (SDK package validation against the last stable release), with the removed or changed members of any breaking module;
-   - a `release-plan` block with one suggested bump, e.g. `bump: minor`, and a `breaking:` line listing the modules whose generated code broke.
-2. **Review the PR.** Change the `bump:` line if you disagree, or delete it to merge without publishing. Edit the `breaking:` line if a module should (or shouldn't) be flagged. Re-runs rewrite the PR body, so edit it just before merging.
+   - a `release-plan` block with one suggested bump, e.g. `bump: minor`, and a `breaking:` line listing the modules whose generated code broke. If the latest release is a pre-release, it also has a `prerelease:` line on that channel (e.g. `prerelease: alpha`), so merging publishes the next pre-release (`v0.2.0-alpha.3`) rather than the stable version.
+2. **Review the PR.** Change the `bump:` line if you disagree, or delete it to merge without publishing. Add, change or delete the `prerelease:` line (`alpha`, `beta` or `rc`) to publish a pre-release on that channel or a stable release. Edit the `breaking:` line if a module should (or shouldn't) be flagged. Re-runs rewrite the PR body, so edit it just before merging.
 3. **Merge.** The **Release** workflow tests, tags, packs every package, pushes them to NuGet (core first) and creates one GitHub release with the packages attached. Modules on the `breaking:` line are listed under **Breaking changes in generated code** in the release notes, with a link back to the PR. The tag is only pushed once NuGet has accepted every package, so a failed run can simply be re-run.
 
-Merged update PRs always publish a stable release.
+Merged update PRs publish a stable release unless the release plan has a `prerelease:` line. To start a pre-release series, run a manual pre-release (below); later update PRs then carry it on until you delete the line.
 
 ### Manual releases and pre-releases
 

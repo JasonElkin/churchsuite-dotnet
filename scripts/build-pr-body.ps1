@@ -3,7 +3,8 @@
 .SYNOPSIS
     Builds the update PR body: upstream version range, upstream CHANGELOG entries, the change classification
     table and the editable release-plan block (one shared bump, and the modules whose generated code broke) that
-    the Release workflow reads on merge.
+    the Release workflow reads on merge. While a pre-release series is in progress (the latest release tag is a
+    pre-release), the block also carries a prerelease line on that channel, so merging continues the series.
 #>
 [CmdletBinding()]
 param(
@@ -33,11 +34,16 @@ try {
 catch { Write-Warning "Could not read the upstream CHANGELOG: $_" }
 if (-not $changelog) { $changelog = "_No CHANGELOG entries found._" }
 
-# Preview of the stable version the suggested bump produces (tag-release.ps1 recalculates it on merge).
+# Preview of the version the suggested bump produces (tag-release.ps1 recalculates it on merge).
+# If the latest release is a pre-release, suggest continuing on its channel rather than going stable.
 . "$PSScriptRoot/versioning.ps1"
-$lastTag = Get-LastStableTag
-$next = Get-NextVersion $Bump ""
+$latest = Get-ReleaseTags | Select-Object -Last 1
+$prerelease = if ($latest -and $latest.Channel) { $latest.Channel } else { "" }
+$lastTag = if ($prerelease) { $latest.Tag } else { Get-LastStableTag }
+$next = Get-NextVersion $Bump $prerelease
 $from = if ($lastTag) { " (from ``$lastTag``)" } else { " (first release)" }
+$prereleaseLine = if ($prerelease) { "`nprerelease: $prerelease" } else { "" }
+$prereleaseNote = if ($prerelease) { " This continues the ``$prerelease`` pre-release series (the latest release is ``$($latest.Tag)``): change the ``prerelease:`` line to ``alpha``, ``beta`` or ``rc`` to switch channel, or delete it to publish the stable version instead." } else { "" }
 
 $table = if (Test-Path $BumpsMarkdown) { (Get-Content $BumpsMarkdown) -join "`n" } else { "" }
 $breakingNote = if ($Breaking) { "`n`n**Breaking changes in generated code:** ``$Breaking``. Under the versioning policy these ship in a minor release, and the release notes flag the modules listed on the ``breaking:`` line below. Check the changed members in the table before merging." } else { "" }
@@ -51,12 +57,12 @@ Automated regeneration from the upstream ChurchSuite OpenAPI specs: $range.
 
 Changed modules: ``$Changed``$newNote$breakingNote
 
-**Merging publishes every package to NuGet as ``$next``**$from. All packages share one version, so unchanged ones are re-released too. The bump below is suggested from package validation against the last release (the largest change wins). Change it to ``major``, ``minor`` or ``patch``, or delete the line to merge without publishing. If this workflow runs again before merge it rewrites this body and your edit is lost.
+**Merging publishes every package to NuGet as ``$next``**$from.$prereleaseNote All packages share one version, so unchanged ones are re-released too. The bump below is suggested from package validation against the last release (the largest change wins). Change it to ``major``, ``minor`` or ``patch``, or delete the line to merge without publishing. If this workflow runs again before merge it rewrites this body and your edit is lost.
 
 $table
 
-<!-- release-plan: change the bump, or delete the line to skip publishing; breaking lists the modules flagged in the release notes -->
-bump: $Bump$breakingLine
+<!-- release-plan: change the bump, or delete the line to skip publishing; prerelease (alpha, beta or rc) publishes a pre-release instead of a stable version; breaking lists the modules flagged in the release notes -->
+bump: $Bump$prereleaseLine$breakingLine
 <!-- /release-plan -->
 
 <details><summary>Upstream CHANGELOG</summary>
